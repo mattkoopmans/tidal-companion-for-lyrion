@@ -49,7 +49,9 @@ sub initPlugin {
 	require Plugins::TidalCompanion::Views;
 	Plugins::TidalCompanion::Views->init();
 	Slim::Utils::Timers::setTimer(undef, time() + 30, sub {
-		Plugins::TidalCompanion::Views->buildIfEmpty() unless Slim::Music::Import->stillScanning;
+		return if Slim::Music::Import->stillScanning;
+		my $data = Slim::Utils::PluginManager->dataForPlugin($class) || {};
+		Plugins::TidalCompanion::Views->buildIfNeeded($data->{version});
 	});
 
 	# what's in the library may have changed

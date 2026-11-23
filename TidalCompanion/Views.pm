@@ -14,6 +14,7 @@ use strict;
 
 use Slim::Music::VirtualLibraries;
 use Slim::Utils::Log;
+use Slim::Utils::Prefs;
 use Slim::Utils::Strings qw(string);
 
 use Plugins::TidalCompanion::Library;
@@ -60,15 +61,23 @@ sub _build {
 	main::INFOLOG && $log->is_info && $log->info('Library without lossy duplicates hides ' . scalar(@hidden) . ' album(s) and ' . scalar(@tracks) . ' other track(s)');
 }
 
-# On the server: build the view the first time, before any scan has.
-sub buildIfEmpty {
+# On the server: build the view if it's empty, or if this version of the
+# plugin hasn't built it yet (the rules may have changed).
+sub buildIfNeeded {
+	my ($class, $version) = @_;
+
 	my $id = Slim::Music::VirtualLibraries->getRealId(ID) || return;
+	my $prefs = Slim::Utils::Prefs::preferences('plugin.tidalcompanion');
 
 	my ($count) = Slim::Schema->dbh->selectrow_array(
 		'SELECT COUNT(*) FROM library_track WHERE library = ?', undef, $id
 	);
 
-	Slim::Music::VirtualLibraries->rebuild(ID) unless $count;
+	return if $count && ($prefs->get('viewBuiltFor') || '') eq ($version || '');
+
+	main::INFOLOG && $log->is_info && $log->info('Rebuilding the library without lossy duplicates');
+	Slim::Music::VirtualLibraries->rebuild(ID);
+	$prefs->set('viewBuiltFor', $version || '');
 }
 
 1;
