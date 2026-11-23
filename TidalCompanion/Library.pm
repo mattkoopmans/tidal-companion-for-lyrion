@@ -1,7 +1,7 @@
 package Plugins::TidalCompanion::Library;
 
-# What Tidal Companion needs to know about the library: which local albums
-# are lossy, which Tidal albums in the library are the same album, and which
+# What TIDAL Companion needs to know about the library: which local albums
+# are lossy, which TIDAL albums in the library are the same album, and which
 # albums each album artist has. Used by the server and by the scanner.
 
 use strict;
@@ -30,7 +30,7 @@ sub _key {
 	return artistKey($artist) . "\0" . albumKey($title);
 }
 
-# album key with artist => [ IDs of lossless Tidal albums in the library ]
+# album key with artist => [ IDs of lossless TIDAL albums in the library ]
 sub _tidalIndex {
 	return $tidalIndex if $tidalIndex;
 
@@ -60,9 +60,9 @@ sub _tracks {
 	}, { Slice => {} }, $albumId) || [];
 }
 
-# For a local album with lossy files and a lossless Tidal copy in the
-# library: { album => Tidal album ID, tracks => { local track ID => Tidal
-# track ID } }, covering the lossy tracks that have a Tidal partner. An empty
+# For a local album with lossy files and a lossless TIDAL copy in the
+# library: { album => TIDAL album ID, tracks => { local track ID => TIDAL
+# track ID } }, covering the lossy tracks that have a TIDAL partner. An empty
 # hash otherwise.
 sub twinMap {
 	my ($class, $albumId) = @_;
@@ -104,7 +104,7 @@ sub twinMap {
 	return $twins{$albumId} = $result;
 }
 
-# 'twin' for a lossy local album that plays from a Tidal copy, 'lossy' for one
+# 'twin' for a lossy local album that plays from a TIDAL copy, 'lossy' for one
 # without, undef for anything else (no local files, or some lossless ones).
 sub albumStatus {
 	my ($class, $albumId) = @_;
@@ -173,8 +173,8 @@ sub artist {
 	return $class->artists->{ artistKey($name) };
 }
 
-# True if Lyrion's online library integration brings Tidal favorites into
-# the library. Without it, nothing added to Tidal favorites shows up here.
+# True if Lyrion's online library integration brings TIDAL favorites into
+# the library. Without it, nothing added to TIDAL favorites shows up here.
 sub tidalImportEnabled {
 	return 0 unless Slim::Music::Import->can('isOnlineLibrarySupportEnabled')
 		&& Slim::Music::Import->isOnlineLibrarySupportEnabled();

@@ -1,6 +1,6 @@
 package Plugins::TidalCompanion::TidalSync;
 
-# A small, blocking Tidal client for the library scan, which runs in Lyrion's
+# A small, blocking TIDAL client for the library scan, which runs in Lyrion's
 # scanner where nothing can wait for callbacks. It borrows the TIDAL plugin's
 # account and access token; the TIDAL plugin keeps the token fresh.
 
@@ -16,13 +16,13 @@ use Slim::Utils::Log;
 use Slim::Utils::Prefs;
 
 use constant BASE_URL  => 'https://api.tidal.com/v1';
-use constant PAUSE     => 0.25;   # seconds between requests, to go easy on Tidal
+use constant PAUSE     => 0.25;   # seconds between requests, to go easy on TIDAL
 use constant PAGE      => 100;
 use constant MAX_ITEMS => 1000;
 
 my $log = logger('plugin.tidalcompanion');
 
-# The Tidal account whose favorites the TIDAL plugin brings into the library
+# The TIDAL account whose favorites the TIDAL plugin brings into the library
 # (the first one, if there are several).
 sub account {
 	my $tidalPrefs = preferences('plugin.tidal');
@@ -54,7 +54,7 @@ sub new {
 	}, $class;
 }
 
-# True once Tidal has refused access or asked us to slow down: the scan
+# True once TIDAL has refused access or asked us to slow down: the scan
 # should stop and try again next time.
 sub stopped { $_[0]->{stopped} }
 
@@ -67,7 +67,7 @@ sub _failed {
 	my ($self, $what, $response) = @_;
 
 	my $code = $response->code || 0;
-	$log->warn("Tidal request failed ($what): $code");
+	$log->warn("TIDAL request failed ($what): $code");
 
 	$self->{stopped} = 1 if $code == 401 || $code == 403 || $code == 429;
 
@@ -105,7 +105,7 @@ sub get {
 
 		$result = eval { decode_json($response->content) };
 		if (!$result) {
-			$log->warn("Tidal sent something unreadable for $path: $@");
+			$log->warn("TIDAL sent something unreadable for $path: $@");
 			return;
 		}
 
@@ -139,7 +139,7 @@ sub artistAlbums {
 	return $result->{items} || [];
 }
 
-# Every album in the account's Tidal favorites, or undef if Tidal couldn't
+# Every album in the account's TIDAL favorites, or undef if TIDAL couldn't
 # be asked.
 sub favoriteAlbums {
 	my ($self) = @_;

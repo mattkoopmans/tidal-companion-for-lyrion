@@ -2,7 +2,7 @@ package Plugins::TidalCompanion::Swap;
 
 # Whenever tracks are added to a player's queue, by any route (an album, a
 # single track, an artist, a playlist, a mix), lossy local tracks that have a
-# lossless Tidal twin in the library are swapped for the Tidal track.
+# lossless TIDAL twin in the library are swapped for the TIDAL track.
 
 use strict;
 
@@ -22,7 +22,7 @@ my $prefs = preferences('plugin.tidalcompanion');
 sub init {
 	# Lyrion calls this by its full name from every place that adds tracks
 	wrap('Slim::Player::Playlist::addTracks', \&_addTracks)
-		or $log->error("Can't find Slim::Player::Playlist::addTracks; lossy albums won't be swapped for Tidal");
+		or $log->error("Can't find Slim::Player::Playlist::addTracks; lossy albums won't be swapped for TIDAL");
 }
 
 sub _addTracks {
@@ -32,7 +32,7 @@ sub _addTracks {
 		my $swapped = eval { swap($tracksRef) };
 
 		if ($@) {
-			$log->error("Couldn't swap lossy tracks for Tidal: $@");
+			$log->error("Couldn't swap lossy tracks for TIDAL: $@");
 		}
 		else {
 			$tracksRef = $swapped;
@@ -54,12 +54,12 @@ sub swap {
 		$replacement || $_;
 	} @$tracks;
 
-	main::INFOLOG && $count && $log->is_info && $log->info("Playing $count lossy track(s) from Tidal instead");
+	main::INFOLOG && $count && $log->is_info && $log->info("Playing $count lossy track(s) from TIDAL instead");
 
 	return \@result;
 }
 
-# The Tidal track to play instead of $track (a track object or URL), or undef.
+# The TIDAL track to play instead of $track (a track object or URL), or undef.
 sub replacement {
 	my ($track) = @_;
 

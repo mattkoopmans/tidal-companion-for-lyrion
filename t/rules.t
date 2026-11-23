@@ -44,7 +44,7 @@ foreach (@same) {
 	is(albumKey($_->[0]), albumKey($_->[1]), "\"$_->[0]\" is \"$_->[1]\"");
 }
 
-is(albumKey('Vision Thing', 'Remastered'), albumKey('Vision Thing'), 'Tidal version field ignored');
+is(albumKey('Vision Thing', 'Remastered'), albumKey('Vision Thing'), 'TIDAL version field ignored');
 
 my @different = (
 	['Alive (Live)', 'Alive'],
@@ -73,7 +73,7 @@ ok(!isLossy('mp4', 1), 'flagged lossless wins');
 ok(!isLossy('xyz', 0), 'unknown formats are left alone');
 ok(!isLossy(undef, undef), 'nothing known is left alone');
 
-# --- Tidal quality ------------------------------------------------------
+# --- TIDAL quality ------------------------------------------------------
 
 ok(isLosslessOnTidal({ mediaMetadata => { tags => ['LOSSLESS'] } }), 'LOSSLESS tag');
 ok(isLosslessOnTidal({ mediaMetadata => { tags => ['HIRES_LOSSLESS', 'LOSSLESS'] } }), 'hi-res tag');
@@ -120,7 +120,7 @@ ok((grep { $_ eq albumKey('New One') } @$keys), 'new album remembered');
 ($new) = newAlbums([$fresh], \%seen, { albumKey('New One') => 1 });
 is_deeply($new, [], 'new album already in library is not added');
 
-# --- Tidal favorites ----------------------------------------------------
+# --- TIDAL favorites ----------------------------------------------------
 
 my $favorites = favoriteKeys([
 	{ title => 'New One', version => 'Deluxe', artist => { name => 'Gojira' } },
@@ -136,7 +136,7 @@ is_deeply($favorites, {
 
 my %present = (%{ { albumKey('Magma') => 1 } }, %{ $favorites->{gojira} });
 ($new) = newAlbums([$fresh, $freshDeluxe], \%seen, \%present);
-is_deeply($new, [], 'new album already in Tidal favorites but not yet imported is not added');
+is_deeply($new, [], 'new album already in TIDAL favorites but not yet imported is not added');
 
 is_deeply(missingAlbums([$fresh, $other], \%present), [], 'missing list leaves out favorites not yet imported');
 
@@ -160,7 +160,7 @@ my $twice = matchTracks(
 	[{ id => 1, title => 'Song', disc => 1, tracknum => 5 }, { id => 2, title => 'Song', disc => 1, tracknum => 9 }],
 	[{ id => 101, title => 'Song', disc => 1, tracknum => 9 }],
 );
-is_deeply($twice, { 2 => 101 }, 'a Tidal track is used once, by its own position');
+is_deeply($twice, { 2 => 101 }, 'a TIDAL track is used once, by its own position');
 
 ok(similarTitles(trackKey('Skull Forrest'), trackKey('Skull Forest')), 'one letter off is similar');
 ok(similarTitles(trackKey("You Probably Couldn't See for the Lights But You Were Staring Straight"),

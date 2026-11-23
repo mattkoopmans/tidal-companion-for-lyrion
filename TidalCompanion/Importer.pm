@@ -1,11 +1,11 @@
 package Plugins::TidalCompanion::Importer;
 
 # A step in Lyrion's library scan, run just before the TIDAL plugin imports
-# Tidal favorites: for each album artist in the library, albums that have
-# appeared on Tidal since the last check are added to Tidal favorites, so the
+# TIDAL favorites: for each album artist in the library, albums that have
+# appeared on TIDAL since the last check are added to TIDAL favorites, so the
 # TIDAL import that follows brings them into the library.
 #
-# The first time an artist is checked, what Tidal has then is only noted;
+# The first time an artist is checked, what TIDAL has then is only noted;
 # filling in an artist's older albums is left to the artist menu item.
 
 use strict;
@@ -22,7 +22,7 @@ use Plugins::TidalCompanion::Rules qw(albumKey artistKey favoriteKeys groupAlbum
 use Plugins::TidalCompanion::TidalSync;
 
 use constant CHECK_EVERY     => 20 * 3600;       # each artist at most this often
-use constant RETRY_UNMATCHED => 30 * 86400;      # an artist not found on Tidal
+use constant RETRY_UNMATCHED => 30 * 86400;      # an artist not found on TIDAL
 use constant BATCH           => 20;
 
 my $log   = logger('plugin.tidalcompanion');
@@ -53,7 +53,7 @@ sub startScan { if (main::SCANNER) {
 	my ($class) = @_;
 
 	eval { $class->run };
-	$log->error("Checking for new releases on Tidal failed: $@") if $@;
+	$log->error("Checking for new releases on TIDAL failed: $@") if $@;
 
 	Slim::Music::Import->endImporter($class);
 } }
@@ -90,8 +90,8 @@ sub _saveState {
 	}
 }
 
-# The Tidal artist and their albums, or nothing if the artist can't be found.
-# An artist found by name is only accepted if Tidal lists at least one album
+# The TIDAL artist and their albums, or nothing if the artist can't be found.
+# An artist found by name is only accepted if TIDAL lists at least one album
 # that is already in the library, so a namesake isn't mistaken for them.
 sub _findArtist {
 	my ($tidal, $artist, $state) = @_;
@@ -119,23 +119,23 @@ sub run {
 
 	my $userId = Plugins::TidalCompanion::TidalSync->account;
 	if (!$userId) {
-		main::INFOLOG && $log->is_info && $log->info('No Tidal account; not checking for new releases');
+		main::INFOLOG && $log->is_info && $log->info('No TIDAL account; not checking for new releases');
 		return;
 	}
 
 	my $tidal = Plugins::TidalCompanion::TidalSync->new($userId);
 	if (!$tidal) {
-		$log->warn('No Tidal access yet; not checking for new releases this time');
+		$log->warn('No TIDAL access yet; not checking for new releases this time');
 		return;
 	}
 
-	# Albums already in Tidal favorites count as in the library: they may not
+	# Albums already in TIDAL favorites count as in the library: they may not
 	# have been imported yet (favorited since the last import, or a scan that
-	# clears the library first, which removes Tidal albums until TIDAL's import
+	# clears the library first, which removes TIDAL albums until TIDAL's import
 	# runs after this step).
 	my $favorites = $tidal->favoriteAlbums;
 	if (!$favorites) {
-		$log->warn("Couldn't read your Tidal favorites; not checking for new releases this time");
+		$log->warn("Couldn't read your TIDAL favorites; not checking for new releases this time");
 		return;
 	}
 	my $favoriteKeys = favoriteKeys($favorites);
@@ -201,18 +201,18 @@ sub run {
 			foreach (@batch) {
 				my $album = $_->{album};
 				push @{ $known->{ $_->{artistKey} }->{seen} }, albumKey($album->{title}, $album->{version});
-				$log->warn("New release added to Tidal favorites: $_->{artist} - $album->{title} ($album->{id})");
+				$log->warn("New release added to TIDAL favorites: $_->{artist} - $album->{title} ($album->{id})");
 				$added++;
 			}
 		}
 		else {
-			$log->warn('Could not add to Tidal favorites: ' . join(', ', map { "$_->{artist} - $_->{album}->{title}" } @batch));
+			$log->warn('Could not add to TIDAL favorites: ' . join(', ', map { "$_->{artist} - $_->{album}->{title}" } @batch));
 		}
 	}
 
-	$log->warn('Stopped checking for new releases early; Tidal refused or asked to slow down. Carrying on next scan.') if $tidal->stopped;
+	$log->warn('Stopped checking for new releases early; TIDAL refused or asked to slow down. Carrying on next scan.') if $tidal->stopped;
 
-	main::INFOLOG && $log->is_info && $log->info("Checked $checked artist(s) on Tidal, added $added new release(s)");
+	main::INFOLOG && $log->is_info && $log->info("Checked $checked artist(s) on TIDAL, added $added new release(s)");
 
 	_saveState($state);
 	$progress->final;

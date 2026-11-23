@@ -1,4 +1,4 @@
-# Tidal Companion for Lyrion
+# TIDAL Companion for Lyrion
 
 A plugin for [Lyrion Music Server](https://lyrion.org) that works alongside the
 TIDAL plugin and Lyrion's online music library integration.
@@ -7,40 +7,40 @@ TIDAL plugin and Lyrion's online music library integration.
 
 1. **Plays lossy albums in lossless.** When an album in your library is lossy
    (MP3, AAC, Musepack and so on) and the same album is also in the library
-   from your Tidal favorites, the lossless Tidal tracks play instead. This
+   from your TIDAL favorites, the lossless TIDAL tracks play instead. This
    happens however the tracks are played: the album, a single track, an
    artist, a playlist or a mix. The album's menu says "Plays in lossless from
-   Tidal".
-2. **Finds lossy albums on Tidal.** A lossy album with no Tidal copy in the
-   library gets "Find the lossless version on Tidal" in its menu. Pick the
-   right result and add it to your Tidal favorites.
-3. **Adds an artist's missing albums.** "Add missing albums from Tidal" in an
-   artist's menu lists the albums Tidal has that your library doesn't, with
-   "Add all" at the top. Albums already in your Tidal favorites aren't listed.
+   TIDAL".
+2. **Finds lossy albums on TIDAL.** A lossy album with no TIDAL copy in the
+   library gets "Find the lossless version on TIDAL" in its menu. Pick the
+   right result and add it to your TIDAL favorites.
+3. **Adds an artist's missing albums.** "Add missing albums from TIDAL" in an
+   artist's menu lists the albums TIDAL has that your library doesn't, with
+   "Add all" at the top. Albums already in your TIDAL favorites aren't listed.
 4. **Adds new releases during library scans.** Each library scan (and each
    automatic online library update) checks every album artist in your library
-   on Tidal and adds albums that have come out since the last check to your
-   Tidal favorites, so they appear in the library in the same scan. The first
+   on TIDAL and adds albums that have come out since the last check to your
+   TIDAL favorites, so they appear in the library in the same scan. The first
    scan only notes what each artist already has. Each artist is checked at
    most once every 20 hours. An album isn't added if any version of it is
-   already in the library or in your Tidal favorites (favorites that haven't
+   already in the library or in your TIDAL favorites (favorites that haven't
    been imported yet count too). If your favorites can't be read, the scan
    step is skipped that time rather than risk adding duplicates.
 
-Albums added to Tidal favorites appear in the library after Lyrion's online
-library update, which Tidal Companion starts for you.
+Albums added to TIDAL favorites appear in the library after Lyrion's online
+library update, which TIDAL Companion starts for you.
 
 ### Same album, different version
 
 Versions of an album count as the same album. Version information in titles
 is ignored, such as "(2011 Remaster)", "[Deluxe Edition]", "- Remastered 2009",
-"(Expanded)" or "(1999)". Live albums are different albums. When Tidal has
+"(Expanded)" or "(1999)". Live albums are different albums. When TIDAL has
 several versions of a missing album, the version with the most tracks is
-added. Only albums Tidal offers in lossless quality are considered, and only
+added. Only albums TIDAL offers in lossless quality are considered, and only
 albums (not EPs, singles or compilations).
 
 Artist names are compared ignoring case, accents, spacing and a leading "The".
-An artist found on Tidal by name is only used if Tidal lists at least one of
+An artist found on TIDAL by name is only used if TIDAL lists at least one of
 the albums already in your library, so a namesake isn't mistaken for them.
 
 ## Requirements
@@ -52,9 +52,9 @@ the albums already in your library, so a namesake isn't mistaken for them.
 
 ## Settings
 
-Settings > Advanced > Tidal Companion:
+Settings > Advanced > TIDAL Companion:
 
-- **Play lossless from Tidal** (on by default)
+- **Play lossless from TIDAL** (on by default)
 - **Add new releases during library scans** (on by default)
 
 What the scan has noted for each artist is kept in `tidalcompanion.json` in
@@ -64,7 +64,7 @@ not adding).
 ## Installing
 
 In Lyrion, go to Settings > Manage Plugins, add this repository URL at the
-bottom of the page, then install Tidal Companion:
+bottom of the page, then install TIDAL Companion:
 
     https://raw.githubusercontent.com/mattkoopmans/tidal-companion-for-lyrion/main/repo.xml
 

@@ -1,11 +1,11 @@
 package Plugins::TidalCompanion::Plugin;
 
-# Tidal Companion: works alongside the TIDAL plugin and Lyrion's online
+# TIDAL Companion: works alongside the TIDAL plugin and Lyrion's online
 # library integration.
-#   - lossy local albums play from their lossless Tidal copy in the library
-#   - lossy local albums can be looked up on Tidal and added to favorites
-#   - artists' missing albums can be added from Tidal
-#   - the library scan adds artists' new releases from Tidal
+#   - lossy local albums play from their lossless TIDAL copy in the library
+#   - lossy local albums can be looked up on TIDAL and added to favorites
+#   - artists' missing albums can be added from TIDAL
+#   - the library scan adds artists' new releases from TIDAL
 
 use strict;
 

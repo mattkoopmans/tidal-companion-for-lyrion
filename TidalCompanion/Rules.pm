@@ -1,8 +1,8 @@
 package Plugins::TidalCompanion::Rules;
 
-# The decisions Tidal Companion makes, kept free of Lyrion so they can be
+# The decisions TIDAL Companion makes, kept free of Lyrion so they can be
 # tested on their own: what counts as the same album or artist, which files
-# are lossy, which Tidal version of an album to add, and which Tidal track
+# are lossy, which TIDAL version of an album to add, and which TIDAL track
 # stands in for which local one.
 
 use strict;
@@ -48,7 +48,7 @@ sub normKey {
 
 # The title with any version information taken off: bracketed parts such as
 # "(2011 Remaster)", "[Deluxe Edition]" or "(1999)", and dash suffixes such
-# as " - Remastered 2009". Tidal keeps some of this in a separate version
+# as " - Remastered 2009". TIDAL keeps some of this in a separate version
 # field, which can be passed as the second argument.
 sub baseTitle {
 	my ($title, $version) = @_;
@@ -101,7 +101,7 @@ sub isLossy {
 	return $LOSSY_TYPES{$contentType} ? 1 : 0;
 }
 
-# True if Tidal offers the album in CD quality or better. When Tidal says
+# True if TIDAL offers the album in CD quality or better. When TIDAL says
 # nothing about quality, the album is given the benefit of the doubt.
 sub isLosslessOnTidal {
 	my ($album) = @_;
@@ -118,7 +118,7 @@ sub isLosslessOnTidal {
 	return 1;
 }
 
-# Tidal albums grouped by album key, leaving out ones not available lossless.
+# TIDAL albums grouped by album key, leaving out ones not available lossless.
 sub groupAlbums {
 	my ($albums) = @_;
 
@@ -135,7 +135,7 @@ sub groupAlbums {
 	return \%groups;
 }
 
-# The version to add when Tidal has several: the one with the most tracks,
+# The version to add when TIDAL has several: the one with the most tracks,
 # then the most recent release, then the lowest ID so the choice is stable.
 sub pickVersion {
 	my @albums = @_;
@@ -149,7 +149,7 @@ sub pickVersion {
 	return $best;
 }
 
-# The Tidal albums whose album key isn't among $libraryKeys (a hash ref), one
+# The TIDAL albums whose album key isn't among $libraryKeys (a hash ref), one
 # version of each, oldest release first.
 sub missingAlbums {
 	my ($tidalAlbums, $libraryKeys) = @_;
@@ -166,10 +166,10 @@ sub missingAlbums {
 	} keys %$groups ];
 }
 
-# For the library scan: the albums Tidal lists now that weren't listed last
+# For the library scan: the albums TIDAL lists now that weren't listed last
 # time ($seenKeys, a hash ref; undef the first time an artist is checked, in
 # which case nothing is new) and aren't in the library. Returns the albums to
-# add and every album key Tidal lists now.
+# add and every album key TIDAL lists now.
 sub newAlbums {
 	my ($tidalAlbums, $seenKeys, $libraryKeys) = @_;
 
@@ -187,7 +187,7 @@ sub newAlbums {
 	return (\@new, \@keys);
 }
 
-# Album keys of Tidal favorite albums, by artist: { artist key => { album
+# Album keys of TIDAL favorite albums, by artist: { artist key => { album
 # key => 1 } }. An album counts for its main artist and every listed artist.
 sub favoriteKeys {
 	my ($albums) = @_;
@@ -209,9 +209,9 @@ sub favoriteKeys {
 	return \%keys;
 }
 
-# Pairs local tracks with Tidal tracks of the same album. Each track is
-# { id, title, disc, tracknum }. Returns { local id => Tidal id } for the
-# tracks that found a partner; each Tidal track is used once.
+# Pairs local tracks with TIDAL tracks of the same album. Each track is
+# { id, title, disc, tracknum }. Returns { local id => TIDAL id } for the
+# tracks that found a partner; each TIDAL track is used once.
 sub matchTracks {
 	my ($local, $remote) = @_;
 

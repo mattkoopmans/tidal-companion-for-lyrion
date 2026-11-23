@@ -1,12 +1,13 @@
 package Plugins::TidalCompanion::Menus;
 
 # The album and artist context menu items:
-#   - on a lossy local album: a note that it plays from Tidal, or a search for
-#     it on Tidal with an item to add the result to Tidal favorites
-#   - on an artist: the albums Tidal has that the library doesn't, with an
-#     item to add them all to Tidal favorites
+#   - on a lossy local album: a note that it plays from TIDAL, or a search for
+#     it on TIDAL with an item to add the result to TIDAL favorites
+#   - on an artist: the albums TIDAL has that the library doesn't, with an
+#     item to add them all to TIDAL favorites
 
 use strict;
+use utf8;
 
 use Slim::Utils::Log;
 use Slim::Utils::Prefs;
@@ -124,7 +125,7 @@ sub _albumTitle {
 	return $title;
 }
 
-# A Tidal album, opening onto an item that adds it to Tidal favorites.
+# A TIDAL album, opening onto an item that adds it to TIDAL favorites.
 sub _albumItem {
 	my ($client, $album) = @_;
 
@@ -186,7 +187,7 @@ sub missingForArtist {
 	my $show = sub {
 		my ($albums) = @_;
 
-		# albums already in Tidal favorites but not yet imported count as present
+		# albums already in TIDAL favorites but not yet imported count as present
 		$api->getFavorites(sub {
 			my $favorites = shift;
 			my %present = (%$libraryKeys, %{ favoriteKeys($favorites)->{ artistKey($name) } || {} });
@@ -218,7 +219,7 @@ sub missingForArtist {
 		return $api->artistAlbums(sub { $show->(shift) }, $tidalId, 'ALBUMS');
 	}
 
-	# Find the artist on Tidal by name. With several artists of that name, take
+	# Find the artist on TIDAL by name. With several artists of that name, take
 	# the first whose albums include one already in the library.
 	$api->search(sub {
 		my $artists = shift;
@@ -254,7 +255,7 @@ sub missingForArtist {
 	});
 }
 
-# --- adding to Tidal favorites -------------------------------------------------
+# --- adding to TIDAL favorites -------------------------------------------------
 
 sub addAlbums {
 	my ($client, $cb, $args, $params) = @_;
@@ -263,7 +264,7 @@ sub addAlbums {
 	return _text($cb, cstring($client, 'PLUGIN_TIDALCOMPANION_NOTHING_FOUND')) unless @albums;
 
 	_api($client)->updateFavorite(sub {
-		$log->warn('Added to Tidal favorites: ' . join(', ', map { "$_->{title} ($_->{id})" } @albums));
+		$log->warn('Added to TIDAL favorites: ' . join(', ', map { "$_->{title} ($_->{id})" } @albums));
 
 		my $done = @albums == 1
 			? cstring($client, 'PLUGIN_TIDALCOMPANION_ADDED', $albums[0]->{title})
