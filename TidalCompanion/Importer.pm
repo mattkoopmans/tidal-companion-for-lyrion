@@ -18,7 +18,7 @@ use Slim::Utils::Prefs;
 use Slim::Utils::Progress;
 
 use Plugins::TidalCompanion::Library;
-use Plugins::TidalCompanion::Rules qw(albumKey artistKey groupAlbums newAlbums);
+use Plugins::TidalCompanion::Rules qw(albumKey artistKey favoriteKeys groupAlbums newAlbums);
 use Plugins::TidalCompanion::TidalSync;
 
 use constant CHECK_EVERY     => 20 * 3600;       # each artist at most this often
@@ -129,6 +129,17 @@ sub run {
 		return;
 	}
 
+	# Albums already in Tidal favorites count as in the library: they may not
+	# have been imported yet (favorited since the last import, or a scan that
+	# clears the library first, which removes Tidal albums until TIDAL's import
+	# runs after this step).
+	my $favorites = $tidal->favoriteAlbums;
+	if (!$favorites) {
+		$log->warn("Couldn't read your Tidal favorites; not checking for new releases this time");
+		return;
+	}
+	my $favoriteKeys = favoriteKeys($favorites);
+
 	Plugins::TidalCompanion::Library->clearCache;
 	my $artists = Plugins::TidalCompanion::Library->artists;
 	my @keys = sort keys %$artists;
@@ -144,7 +155,7 @@ sub run {
 	});
 
 	my $now = time();
-	my ($checked, @toAdd) = (0);
+	my ($checked, @toAdd, %adding) = (0);
 
 	foreach my $key (@keys) {
 		my $artist = $artists->{$key};
@@ -170,11 +181,15 @@ sub run {
 		$artistState->{checked} = $now;
 
 		my $seen = $artistState->{seen} ? { map { $_ => 1 } @{ $artistState->{seen} } } : undef;
-		my ($new, $current) = newAlbums($albums, $seen, $artist->{albumKeys});
+		my %present = (%{ $artist->{albumKeys} }, %{ $favoriteKeys->{$key} || {} });
+		my ($new, $current) = newAlbums($albums, $seen, \%present);
+
+		# an album shared by two library artists is added once
+		$new = [ grep { !$adding{ $_->{id} }++ } @$new ];
 
 		# new albums are only noted as seen once they've been added
-		my %adding = map { albumKey($_->{title}, $_->{version}) => 1 } @$new;
-		my %all = map { $_ => 1 } @{ $artistState->{seen} || [] }, grep { !$adding{$_} } @$current;
+		my %newKeys = map { albumKey($_->{title}, $_->{version}) => 1 } @$new;
+		my %all = map { $_ => 1 } @{ $artistState->{seen} || [] }, grep { !$newKeys{$_} } @$current;
 		$artistState->{seen} = [ sort keys %all ];
 
 		push @toAdd, map { { album => $_, artistKey => $key, artist => $artist->{name} } } @$new;

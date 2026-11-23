@@ -139,6 +139,15 @@ sub artistAlbums {
 	return $result->{items} || [];
 }
 
+# Every album in the account's Tidal favorites, or undef if Tidal couldn't
+# be asked.
+sub favoriteAlbums {
+	my ($self) = @_;
+
+	my $result = $self->get("/users/$self->{userId}/favorites/albums", {}, 10_000) || return;
+	return [ grep { ref $_ eq 'HASH' } map { $_->{item} } @{ $result->{items} || [] } ];
+}
+
 sub addFavoriteAlbums {
 	my ($self, @ids) = @_;
 

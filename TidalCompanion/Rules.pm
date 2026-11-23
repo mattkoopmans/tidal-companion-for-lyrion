@@ -14,7 +14,7 @@ use Unicode::Normalize qw(NFKD);
 our @EXPORT_OK = qw(
 	normKey baseTitle albumKey artistKey trackKey
 	isLossy isLosslessOnTidal
-	groupAlbums pickVersion missingAlbums newAlbums
+	groupAlbums pickVersion missingAlbums newAlbums favoriteKeys
 	matchTracks similarTitles
 );
 
@@ -185,6 +185,28 @@ sub newAlbums {
 	} @keys;
 
 	return (\@new, \@keys);
+}
+
+# Album keys of Tidal favorite albums, by artist: { artist key => { album
+# key => 1 } }. An album counts for its main artist and every listed artist.
+sub favoriteKeys {
+	my ($albums) = @_;
+
+	my %keys;
+	foreach my $album (@{ $albums || [] }) {
+		next unless ref $album eq 'HASH';
+
+		my $albumKey = albumKey($album->{title}, $album->{version});
+		next unless length $albumKey;
+
+		my %artists = map { artistKey($_->{name}) => 1 }
+			grep { ref $_ eq 'HASH' && defined $_->{name} }
+			($album->{artist}, @{ $album->{artists} || [] });
+
+		$keys{$_}->{$albumKey} = 1 foreach grep { length } keys %artists;
+	}
+
+	return \%keys;
 }
 
 # Pairs local tracks with Tidal tracks of the same album. Each track is

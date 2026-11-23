@@ -10,7 +10,7 @@ BEGIN {
 	Plugins::TidalCompanion::Rules->import(qw(
 		normKey baseTitle albumKey artistKey trackKey
 		isLossy isLosslessOnTidal
-		groupAlbums pickVersion missingAlbums newAlbums matchTracks similarTitles
+		groupAlbums pickVersion missingAlbums newAlbums favoriteKeys matchTracks similarTitles
 	));
 }
 
@@ -119,6 +119,26 @@ ok((grep { $_ eq albumKey('New One') } @$keys), 'new album remembered');
 
 ($new) = newAlbums([$fresh], \%seen, { albumKey('New One') => 1 });
 is_deeply($new, [], 'new album already in library is not added');
+
+# --- Tidal favorites ----------------------------------------------------
+
+my $favorites = favoriteKeys([
+	{ title => 'New One', version => 'Deluxe', artist => { name => 'Gojira' } },
+	{ title => 'Duets', artist => { name => 'The Singer' }, artists => [{ name => 'The Singer' }, { name => 'Guest Star' }] },
+	undef,
+	{ title => '', artist => { name => 'Nobody' } },
+]);
+is_deeply($favorites, {
+	gojira    => { albumKey('New One') => 1 },
+	singer    => { albumKey('Duets') => 1 },
+	gueststar => { albumKey('Duets') => 1 },
+}, 'favorite albums keyed by every artist, versions ignored');
+
+my %present = (%{ { albumKey('Magma') => 1 } }, %{ $favorites->{gojira} });
+($new) = newAlbums([$fresh, $freshDeluxe], \%seen, \%present);
+is_deeply($new, [], 'new album already in Tidal favorites but not yet imported is not added');
+
+is_deeply(missingAlbums([$fresh, $other], \%present), [], 'missing list leaves out favorites not yet imported');
 
 # --- tracks -------------------------------------------------------------
 

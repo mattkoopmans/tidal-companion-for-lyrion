@@ -14,7 +14,7 @@ use Slim::Utils::Strings qw(cstring);
 use Slim::Utils::Timers;
 
 use Plugins::TidalCompanion::Library;
-use Plugins::TidalCompanion::Rules qw(albumKey artistKey missingAlbums groupAlbums);
+use Plugins::TidalCompanion::Rules qw(albumKey artistKey favoriteKeys missingAlbums groupAlbums);
 
 my $log = logger('plugin.tidalcompanion');
 
@@ -182,10 +182,22 @@ sub missingForArtist {
 	my $tidalId = ($params->{extid} || '') =~ /^tidal:artist:(\d+)$/ ? $1 : $libraryArtist->{tidalId};
 	my $api = _api($client);
 
+	my $showMissing;
 	my $show = sub {
 		my ($albums) = @_;
 
-		my $missing = missingAlbums($albums, $libraryKeys);
+		# albums already in Tidal favorites but not yet imported count as present
+		$api->getFavorites(sub {
+			my $favorites = shift;
+			my %present = (%$libraryKeys, %{ favoriteKeys($favorites)->{ artistKey($name) } || {} });
+			$showMissing->($albums, \%present);
+		}, 'albums', 1);
+	};
+
+	$showMissing = sub {
+		my ($albums, $present) = @_;
+
+		my $missing = missingAlbums($albums, $present);
 
 		return _text($cb, cstring($client, 'PLUGIN_TIDALCOMPANION_NONE_MISSING', $name)) unless @$missing;
 

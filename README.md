@@ -16,13 +16,16 @@ TIDAL plugin and Lyrion's online music library integration.
    right result and add it to your Tidal favorites.
 3. **Adds an artist's missing albums.** "Add missing albums from Tidal" in an
    artist's menu lists the albums Tidal has that your library doesn't, with
-   "Add all" at the top.
+   "Add all" at the top. Albums already in your Tidal favorites aren't listed.
 4. **Adds new releases during library scans.** Each library scan (and each
    automatic online library update) checks every album artist in your library
    on Tidal and adds albums that have come out since the last check to your
    Tidal favorites, so they appear in the library in the same scan. The first
    scan only notes what each artist already has. Each artist is checked at
-   most once every 20 hours.
+   most once every 20 hours. An album isn't added if any version of it is
+   already in the library or in your Tidal favorites (favorites that haven't
+   been imported yet count too). If your favorites can't be read, the scan
+   step is skipped that time rather than risk adding duplicates.
 
 Albums added to Tidal favorites appear in the library after Lyrion's online
 library update, which Tidal Companion starts for you.
