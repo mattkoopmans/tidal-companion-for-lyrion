@@ -4,12 +4,12 @@
     <title lang="EN">TIDAL Companion plugin repository</title>
   </details>
   <plugins>
-    <plugin name="TidalCompanion" version="0.3.0" minTarget="9.0.0" maxTarget="*">
+    <plugin name="TidalCompanion" version="0.3.1" minTarget="9.0.0" maxTarget="*">
       <title lang="EN">TIDAL Companion</title>
       <desc lang="EN">Plays lossy albums in lossless from TIDAL, finds them on TIDAL, and adds artists' missing and new albums from TIDAL.</desc>
       <category>musicservices</category>
-      <url>https://github.com/mattkoopmans/tidal-companion-for-lyrion/releases/download/v0.3.0/TidalCompanion-0.3.0.zip</url>
-      <sha>5500b8b93e8600250d2cc935e14d13c7acc2942f</sha>
+      <url>https://github.com/mattkoopmans/tidal-companion-for-lyrion/releases/download/v0.3.1/TidalCompanion-0.3.1.zip</url>
+      <sha>b4c0643525a489111a335aed1ce9e563388e167c</sha>
       <creator>Matt Koopmans</creator>
       <link>https://github.com/mattkoopmans/tidal-companion-for-lyrion</link>
     </plugin>
