@@ -117,6 +117,60 @@ sub albumStatus {
 	return %{ $class->twinMap($albumId) } ? 'twin' : 'lossy';
 }
 
+# Lossy local albums whose tracks play from a TIDAL copy: the albums the
+# library view without lossy duplicates leaves out.
+sub hiddenAlbumIds {
+	my ($class) = @_;
+
+	my $index = _tidalIndex();
+
+	my $rows = _dbh()->selectall_arrayref(q{
+		SELECT al.id, al.title, c.name
+		FROM albums al
+		JOIN contributors c ON c.id = al.contributor
+		WHERE EXISTS (SELECT 1 FROM tracks t WHERE t.album = al.id AND t.url LIKE 'file:%')
+	}) || [];
+
+	return map { $_->[0] }
+		grep { ($class->albumStatus($_->[0]) || '') eq 'twin' }
+		grep { $index->{ _key($_->[2], $_->[1]) } }
+		@$rows;
+}
+
+# For a TIDAL album in the library: the lossy local albums it stands in for,
+# as [ { id, formats => 'MP3' } ].
+sub lossyCopiesOf {
+	my ($class, $tidalAlbumId) = @_;
+
+	my $album = _dbh()->selectrow_arrayref(q{
+		SELECT al.title, c.name FROM albums al JOIN contributors c ON c.id = al.contributor WHERE al.id = ?
+	}, undef, $tidalAlbumId) || return [];
+
+	my $key = _key($album->[1], $album->[0]);
+
+	my $rows = _dbh()->selectall_arrayref(q{
+		SELECT DISTINCT al.id, al.title, c.name
+		FROM albums al
+		JOIN contributors c ON c.id = al.contributor
+		JOIN tracks t ON t.album = al.id
+		WHERE t.url LIKE 'file:%' AND al.id != ?
+	}, undef, $tidalAlbumId) || [];
+
+	my @copies;
+	foreach my $row (grep { _key($_->[2], $_->[1]) eq $key } @$rows) {
+		my $twin = $class->twinMap($row->[0]);
+		next unless ($twin->{album} || 0) == $tidalAlbumId;
+
+		my $formats = _dbh()->selectcol_arrayref(q{
+			SELECT DISTINCT content_type FROM tracks WHERE album = ? AND url LIKE 'file:%'
+		}, undef, $row->[0]) || [];
+
+		push @copies, { id => $row->[0], formats => join('/', map { uc } sort @$formats) };
+	}
+
+	return \@copies;
+}
+
 sub albumArtistName {
 	my ($class, $albumId) = @_;
 

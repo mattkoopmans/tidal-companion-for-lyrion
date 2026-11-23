@@ -57,3 +57,9 @@ PLUGIN_TIDALCOMPANION_NONE_MISSING
 
 PLUGIN_TIDALCOMPANION_TRACKS
 	EN	%s tracks
+
+PLUGIN_TIDALCOMPANION_LIBRARY
+	EN	Without lossy duplicates
+
+PLUGIN_TIDALCOMPANION_LOSSY_COPY
+	EN	Your lossy copy (%s) plays as this album and is hidden in the "Without lossy duplicates" library

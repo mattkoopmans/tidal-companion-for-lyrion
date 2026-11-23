@@ -69,7 +69,16 @@ sub albumMenu {
 	my $status = eval { Plugins::TidalCompanion::Library->albumStatus($album->id) };
 	$log->error("Couldn't check album " . $album->id . ": $@") if $@;
 
-	return unless $status;
+	if (!$status) {
+		# a TIDAL album standing in for a lossy local copy
+		my $copies = eval { Plugins::TidalCompanion::Library->lossyCopiesOf($album->id) } || [];
+		return unless @$copies;
+
+		return {
+			type => 'text',
+			name => cstring($client, 'PLUGIN_TIDALCOMPANION_LOSSY_COPY', $copies->[0]->{formats} || '?'),
+		};
+	}
 
 	if ($status eq 'twin') {
 		return {

@@ -13,6 +13,7 @@ use base qw(Slim::Plugin::Base);
 
 use Slim::Utils::Log;
 use Slim::Utils::Prefs;
+use Slim::Utils::Timers;
 
 use Plugins::TidalCompanion::Library;
 
@@ -44,6 +45,12 @@ sub initPlugin {
 
 	require Plugins::TidalCompanion::Menus;
 	Plugins::TidalCompanion::Menus->init();
+
+	require Plugins::TidalCompanion::Views;
+	Plugins::TidalCompanion::Views->init();
+	Slim::Utils::Timers::setTimer(undef, time() + 30, sub {
+		Plugins::TidalCompanion::Views->buildIfEmpty() unless Slim::Music::Import->stillScanning;
+	});
 
 	# what's in the library may have changed
 	Slim::Control::Request::subscribe(

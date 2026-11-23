@@ -13,6 +13,7 @@ use strict;
 use File::Spec::Functions qw(catfile);
 use JSON::XS;
 
+use Slim::Schema;
 use Slim::Utils::Log;
 use Slim::Utils::Prefs;
 use Slim::Utils::Progress;
@@ -20,6 +21,7 @@ use Slim::Utils::Progress;
 use Plugins::TidalCompanion::Library;
 use Plugins::TidalCompanion::Rules qw(albumKey artistKey favoriteKeys groupAlbums newAlbums);
 use Plugins::TidalCompanion::TidalSync;
+use Plugins::TidalCompanion::Views;
 
 use constant CHECK_EVERY     => 20 * 3600;       # each artist at most this often
 use constant RETRY_UNMATCHED => 30 * 86400;      # an artist not found on TIDAL
@@ -33,6 +35,9 @@ sub initPlugin { if (main::SCANNER) {
 
 	# not for a scan of a single folder (same rule as the online library importers)
 	return if $ARGV[-1] && 'onlinelibrary' ne $ARGV[-1];
+
+	# the library view is rebuilt at the end of the scan
+	Plugins::TidalCompanion::Views->init();
 
 	my $on = $prefs->get('scanNewReleases');
 	return if defined $on && !$on;
@@ -155,11 +160,18 @@ sub run {
 	});
 
 	my $now = time();
-	my ($checked, @toAdd, %adding) = (0);
+	my ($checked, $done, @toAdd, %adding) = (0, 0);
 
 	foreach my $key (@keys) {
 		my $artist = $artists->{$key};
 		$progress->update($artist->{name});
+
+		# the scanner holds back database writes until a commit: without one the
+		# server can't show the progress
+		Slim::Schema->forceCommit;
+
+		# keep what's been noted so far, in case the scan is stopped
+		_saveState($state) unless ++$done % 25;
 
 		my $artistState = $known->{$key} ||= {};
 
@@ -216,6 +228,7 @@ sub run {
 
 	_saveState($state);
 	$progress->final;
+	Slim::Schema->forceCommit;
 }
 
 1;
