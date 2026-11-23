@@ -25,6 +25,10 @@ is(artistKey('Simon & Garfunkel'), artistKey('Simon and Garfunkel'), '& read as 
 isnt(artistKey('Stone Temple Pilots'), artistKey('Baroness'), 'different artists differ');
 is(normKey(undef), '', 'undef is empty');
 
+my $bytes = "\xe2\x80\xa6And Justice for All (Remastered)";   # as Lyrion's database gives it
+is(albumKey($bytes), albumKey('...And Justice For All (Remastered)'), 'UTF-8 bytes compare as text');
+is(artistKey("Mot\xc3\xb6rhead"), artistKey('Motörhead'), 'accented name in bytes matches decoded name');
+
 # --- version information ------------------------------------------------
 
 my @same = (

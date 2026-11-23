@@ -36,7 +36,12 @@ sub normKey {
 
 	return '' unless defined $text;
 
-	my $key = NFKD($text);
+	# Lyrion's database hands over UTF-8 bytes, TIDAL's replies decoded text:
+	# compare them as text
+	my $key = $text;
+	utf8::decode($key) unless utf8::is_utf8($key);
+
+	$key = NFKD($key);
 	$key =~ s/\p{Mn}//g;
 	$key = lc $key;
 	$key =~ s/&/ and /g;
