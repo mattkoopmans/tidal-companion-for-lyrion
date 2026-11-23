@@ -10,11 +10,11 @@ use Slim::Schema;
 use Slim::Utils::Log;
 use Slim::Utils::Prefs;
 
-use Plugins::TidalCompanion::Rules qw(albumKey artistKey isLossy matchTracks);
+use Plugins::TidalCompanion::Rules qw(albumKey artistKey coversAlbum isLossy matchTracks);
 
 my $log = logger('plugin.tidalcompanion');
 
-my ($tidalIndex, $localIndex, $artists, %twins);
+my ($tidalIndex, $localIndex, $artists, %twins, %localCopies);
 
 # Forget everything worked out so far, e.g. after a library scan.
 sub clearCache {
@@ -22,6 +22,7 @@ sub clearCache {
 	undef $localIndex;
 	undef $artists;
 	%twins = ();
+	%localCopies = ();
 }
 
 sub _dbh { Slim::Schema->dbh }
@@ -98,15 +99,41 @@ sub _localAlbum {
 	return;
 }
 
-# A lossless local album that is the same album as lossy local album $albumId.
+# A lossless local album that is the same album as lossy local album
+# $albumId: same artist and title, and most tracks have a lossless partner.
 sub localLosslessCopy {
 	my ($class, $albumId) = @_;
 
-	my ($album, $sameKey) = _localAlbum($albumId);
-	return unless $album && $album->{kind} eq 'lossy';
+	return $localCopies{$albumId} if exists $localCopies{$albumId};
 
-	my ($copy) = grep { $_->{kind} eq 'lossless' && $_->{id} != $albumId } @$sameKey;
-	return $copy;
+	my $result;
+	my ($album, $sameKey) = _localAlbum($albumId);
+
+	if ($album && $album->{kind} eq 'lossy') {
+		my @lossy = grep { $_->{url} =~ /^file:/ } @{ _tracks($albumId) };
+
+		foreach my $copy (grep { $_->{kind} eq 'lossless' && $_->{id} != $albumId } @$sameKey) {
+			my @lossless = grep { $_->{url} =~ /^file:/ } @{ _tracks($copy->{id}) };
+			my $map = matchTracks(\@lossy, \@lossless);
+
+			if (coversAlbum(scalar keys %$map, scalar @lossy)) {
+				$result = $copy;
+				last;
+			}
+		}
+	}
+
+	return $localCopies{$albumId} = $result;
+}
+
+# True if lossy local album $albumId plays (almost) entirely from a TIDAL copy.
+sub tidalCovers {
+	my ($class, $albumId) = @_;
+
+	my $twin = $class->twinMap($albumId);
+	return 0 unless $twin->{tracks};
+
+	return coversAlbum(scalar keys %{ $twin->{tracks} }, $twin->{lossyCount} || 0);
 }
 
 sub _tracks {
@@ -156,7 +183,7 @@ sub twinMap {
 				}
 			}
 
-			$result = { album => $best, tracks => $bestMap } if $bestMap && %$bestMap;
+			$result = { album => $best, tracks => $bestMap, lossyCount => scalar @lossy } if $bestMap && %$bestMap;
 		}
 	}
 
@@ -174,7 +201,7 @@ sub albumStatus {
 	return undef unless @files;
 	return undef if grep { !isLossy($_->{content_type}, $_->{lossless}) } @files;
 
-	return 'twin' if %{ $class->twinMap($albumId) };
+	return 'twin' if $class->tidalCovers($albumId);
 	return 'localLossless' if $class->localLosslessCopy($albumId);
 	return 'lossy';
 }
@@ -188,12 +215,10 @@ sub hiddenAlbumIds {
 	my @hidden;
 
 	while (my ($key, $albums) = each %{ _localIndex() }) {
-		my $hasLossless = grep { $_->{kind} eq 'lossless' } @$albums;
-
 		foreach my $album (grep { $_->{kind} eq 'lossy' } @$albums) {
 			push @hidden, $album->{id}
-				if $hasLossless
-				|| ($tidal->{$key} && %{ $class->twinMap($album->{id}) });
+				if $class->localLosslessCopy($album->{id})
+				|| ($tidal->{$key} && $class->tidalCovers($album->{id}));
 		}
 	}
 
@@ -235,9 +260,10 @@ sub lossyCopiesOf {
 	my @copies;
 	foreach my $copy (grep { $_->{kind} eq 'lossy' && $_->{id} != $albumId } @$sameKey) {
 		if ($self) {
-			push @copies, { %$copy, via => 'local' } if $self->{kind} eq 'lossless';
+			my $lossless = $class->localLosslessCopy($copy->{id});
+			push @copies, { %$copy, via => 'local' } if $lossless && $lossless->{id} == $albumId;
 		}
-		elsif (($class->twinMap($copy->{id})->{album} || 0) == $albumId) {
+		elsif (($class->twinMap($copy->{id})->{album} || 0) == $albumId && $class->tidalCovers($copy->{id})) {
 			push @copies, { %$copy, via => 'tidal' };
 		}
 	}

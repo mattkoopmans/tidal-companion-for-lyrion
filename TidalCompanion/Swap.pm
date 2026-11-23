@@ -73,6 +73,8 @@ sub replacement {
 	return unless isLossy($track->content_type, $track->lossless);
 
 	my $albumId = $track->get_column('album') || return;
+	return unless Plugins::TidalCompanion::Library->tidalCovers($albumId);
+
 	my $twin = Plugins::TidalCompanion::Library->twinMap($albumId);
 	my $tidalId = ($twin->{tracks} || {})->{ $track->id } || return;
 

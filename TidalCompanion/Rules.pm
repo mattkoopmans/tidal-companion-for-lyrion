@@ -15,7 +15,7 @@ our @EXPORT_OK = qw(
 	normKey baseTitle albumKey artistKey trackKey
 	isLossy isLosslessOnTidal
 	groupAlbums pickVersion missingAlbums newAlbums favoriteKeys
-	matchTracks similarTitles
+	matchTracks similarTitles coversAlbum
 );
 
 # Words that mark a release as another version of the same album rather than
@@ -259,6 +259,15 @@ sub matchTracks {
 	}
 
 	return \%map;
+}
+
+# True if enough of an album's tracks found partners for the albums to count
+# as the same: at least 80%, so a stray extra track doesn't matter but two
+# releases that only share a title (a studio album and a live show) don't
+# match.
+sub coversAlbum {
+	my ($matched, $total) = @_;
+	return $total && $matched >= 0.8 * $total ? 1 : 0;
 }
 
 # True for two track keys that are nearly the same: one starts with the

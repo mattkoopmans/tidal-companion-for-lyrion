@@ -10,7 +10,7 @@ BEGIN {
 	Plugins::TidalCompanion::Rules->import(qw(
 		normKey baseTitle albumKey artistKey trackKey
 		isLossy isLosslessOnTidal
-		groupAlbums pickVersion missingAlbums newAlbums favoriteKeys matchTracks similarTitles
+		groupAlbums pickVersion missingAlbums newAlbums favoriteKeys matchTracks similarTitles coversAlbum
 	));
 }
 
@@ -177,5 +177,11 @@ is_deeply(matchTracks(
 	[{ id => 1, title => 'Skull Forrest', disc => undef, tracknum => 5 }, { id => 2, title => 'Wasted', disc => 1, tracknum => 6 }],
 	[{ id => 101, title => 'Skull Forest', disc => 1, tracknum => 5 }, { id => 102, title => 'Wasted Years', disc => 1, tracknum => 9 }],
 ), { 1 => 101 }, 'near titles pair only in the same place');
+
+ok(coversAlbum(14, 14), 'every track matched covers the album');
+ok(coversAlbum(13, 14), 'one stray track still covers it');
+ok(!coversAlbum(0, 1), 'a live show sharing a studio album title does not');
+ok(!coversAlbum(5, 10), 'half the tracks do not');
+ok(!coversAlbum(0, 0), 'no tracks never covers');
 
 done_testing();

@@ -20,8 +20,11 @@ TIDAL plugin and Lyrion's online music library integration.
    - lossy tracks in an album that also has the same songs in lossless (say,
      FLAC and MP3 of every song in one folder)
 
-   Albums match as described below; tracks are only hidden in favour of a
-   lossless copy on the same album, never one on a different album. The view
+   Albums match as described below, and at least 80% of the lossy album's
+   tracks must have a lossless partner, so a live recording that only shares
+   a studio album's title isn't hidden. The same rule decides which albums
+   play from TIDAL. Tracks are only hidden in favour of a lossless copy on
+   the same album, never one on a different album. The view
    is rebuilt after every library scan.
 2. **Finds lossy albums on TIDAL.** A lossy album with no TIDAL copy in the
    library gets "Find the lossless version on TIDAL" in its menu. Pick the
