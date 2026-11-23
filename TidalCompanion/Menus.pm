@@ -90,6 +90,20 @@ sub albumMenu {
 		};
 	}
 
+	elsif (_tidalReady()) {
+		my $lossy = $self && $self->{source} eq 'local' && $self->{lossy};
+
+		push @items, {
+			type => 'link',
+			name => cstring($client, $lossy ? 'PLUGIN_TIDALCOMPANION_FIND_ON_TIDAL' : 'PLUGIN_TIDALCOMPANION_OTHER_ON_TIDAL'),
+			url  => $lossy ? \&findAlbum : \&moreOnTidal,
+			passthrough => [{
+				artist => Plugins::TidalCompanion::Library->albumArtistName($id) || '',
+				title  => $album->title,
+			}],
+		};
+	}
+
 	if ($self) {
 		push @items, {
 			type => 'link',
@@ -104,19 +118,6 @@ sub albumMenu {
 			url  => \&groupChange,
 			passthrough => [{ action => 'rejoin', albumId => $id }],
 		} if Plugins::TidalCompanion::Versions->isSeparated($id);
-	}
-	elsif (_tidalReady()) {
-		my $lossy = $self && $self->{source} eq 'local' && $self->{lossy};
-
-		push @items, {
-			type => 'link',
-			name => cstring($client, $lossy ? 'PLUGIN_TIDALCOMPANION_FIND_ON_TIDAL' : 'PLUGIN_TIDALCOMPANION_OTHER_ON_TIDAL'),
-			url  => $lossy ? \&findAlbum : \&moreOnTidal,
-			passthrough => [{
-				artist => Plugins::TidalCompanion::Library->albumArtistName($id) || '',
-				title  => $album->title,
-			}],
-		};
 	}
 
 	return \@items;
@@ -135,7 +136,9 @@ sub _statusNote {
 		my ($target) = grep { $_->{id} == $redirect->{album} } @$versions;
 		return {
 			type => 'text',
-			name => cstring($client, 'PLUGIN_TIDALCOMPANION_PLAYS_AS', $target ? _describe($client, $target) : '?'),
+			name => $target
+				? cstring($client, 'PLUGIN_TIDALCOMPANION_PLAYS_AS', $target->{title}, _describe($client, $target))
+				: cstring($client, 'PLUGIN_TIDALCOMPANION_PLAYS_AS', '?', '?'),
 		};
 	}
 

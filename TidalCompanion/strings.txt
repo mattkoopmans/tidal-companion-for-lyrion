@@ -77,7 +77,7 @@ PLUGIN_TIDALCOMPANION_NO_OTHER_ON_TIDAL
 	EN	No other versions on TIDAL.
 
 PLUGIN_TIDALCOMPANION_PLAYS_AS
-	EN	Plays as the %s version
+	EN	Plays as "%s" (%s)
 
 PLUGIN_TIDALCOMPANION_IS_DEFAULT
 	EN	This is the default version

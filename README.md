@@ -61,7 +61,7 @@ library update, which TIDAL Companion starts for you.
    versions" joins albums that weren't matched automatically, such as ones
    with different titles; "Undo merge" separates them again. "More versions
    on TIDAL" lists other releases you can add to favorites. Choices are
-   remembered by TIDAL album or folder, so they survive rescans.
+   remembered by TIDAL album, or folder and title, so they survive rescans.
 
 ### Same album, different version
 

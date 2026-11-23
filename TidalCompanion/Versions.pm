@@ -11,8 +11,8 @@ package Plugins::TidalCompanion::Versions;
 # gives way to the default when at least 80% of its tracks have a partner
 # there, so a live recording sharing a studio album's title is left alone.
 #
-# Choices made by hand are kept by TIDAL album ID or folder, which survive a
-# rescan; library IDs don't.
+# Choices made by hand are kept by TIDAL album ID, or folder and title, which
+# survive a rescan; library IDs don't.
 
 use strict;
 
@@ -69,6 +69,11 @@ sub _groups {
 	foreach my $row (@$rows) {
 		my ($id, $title, $year, $extid, $artist, $url, $type, $lossless) = @$row;
 
+		# the database gives UTF-8 bytes; menus need text
+		foreach ($title, $artist) {
+			utf8::decode($_) if defined $_ && !utf8::is_utf8($_);
+		}
+
 		my $album = $albums{$id} ||= {
 			id => $id, title => $title, year => $year, extid => $extid, artist => $artist,
 			key => groupKey($artist, $title),
@@ -95,9 +100,11 @@ sub _groups {
 		next if $album->{file} && $album->{tidal};
 
 		my $source = $album->{tidal} ? 'tidal' : 'local';
+		# a folder can hold more than one album, so a local album is its folder
+		# and title
 		my $descriptor = $source eq 'tidal'
 			? ($album->{extid} || '')
-			: do { (my $dir = $album->{firstUrl}) =~ s{/[^/]*$}{/}; $dir };
+			: do { (my $dir = $album->{firstUrl}) =~ s{/[^/]*$}{/}; $dir . '#' . lc($album->{title} || '') };
 
 		my $override = length $descriptor ? $overrides->{$descriptor} : undef;
 		my $key = $override || $album->{key};
