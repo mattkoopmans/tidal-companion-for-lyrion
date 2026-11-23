@@ -63,3 +63,9 @@ PLUGIN_TIDALCOMPANION_LIBRARY
 
 PLUGIN_TIDALCOMPANION_LOSSY_COPY
 	EN	Your lossy copy (%s) plays as this album and is hidden in the "Without lossy duplicates" library
+
+PLUGIN_TIDALCOMPANION_LOSSY_COPY_LOCAL
+	EN	Your lossy copy (%s) is hidden in the "Without lossy duplicates" library
+
+PLUGIN_TIDALCOMPANION_HAS_LOSSLESS_COPY
+	EN	Your library has a lossless copy of this album, so this one is hidden in the "Without lossy duplicates" library

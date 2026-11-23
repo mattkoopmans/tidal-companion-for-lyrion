@@ -13,10 +13,16 @@ TIDAL plugin and Lyrion's online music library integration.
    TIDAL".
    **Hiding the lossy copy:** choose the library view "Without lossy
    duplicates" as a player's library (in Material Skin, through the library
-   choice when browsing). It is your whole
-   library minus each lossy album that has a lossless TIDAL copy, so you only
-   see the TIDAL album. Its menu says "Your lossy copy (MP3) plays as this
-   album and is hidden". The view is rebuilt after every library scan.
+   choice when browsing). It is your whole library minus:
+   - each lossy album that has a lossless TIDAL copy (its menu says "Your
+     lossy copy (MP3) plays as this album and is hidden")
+   - each lossy album that has a lossless copy among your own files
+   - lossy tracks in an album that also has the same songs in lossless (say,
+     FLAC and MP3 of every song in one folder)
+
+   Albums match as described below; tracks are only hidden in favour of a
+   lossless copy on the same album, never one on a different album. The view
+   is rebuilt after every library scan.
 2. **Finds lossy albums on TIDAL.** A lossy album with no TIDAL copy in the
    library gets "Find the lossless version on TIDAL" in its menu. Pick the
    right result and add it to your TIDAL favorites.

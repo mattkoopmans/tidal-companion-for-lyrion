@@ -74,9 +74,20 @@ sub albumMenu {
 		my $copies = eval { Plugins::TidalCompanion::Library->lossyCopiesOf($album->id) } || [];
 		return unless @$copies;
 
+		my $copy = $copies->[0];
+
 		return {
 			type => 'text',
-			name => cstring($client, 'PLUGIN_TIDALCOMPANION_LOSSY_COPY', $copies->[0]->{formats} || '?'),
+			name => cstring($client,
+				$copy->{via} eq 'tidal' ? 'PLUGIN_TIDALCOMPANION_LOSSY_COPY' : 'PLUGIN_TIDALCOMPANION_LOSSY_COPY_LOCAL',
+				$copy->{formats} || '?'),
+		};
+	}
+
+	if ($status eq 'localLossless') {
+		return {
+			type => 'text',
+			name => cstring($client, 'PLUGIN_TIDALCOMPANION_HAS_LOSSLESS_COPY'),
 		};
 	}
 

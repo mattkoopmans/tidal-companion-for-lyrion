@@ -1,9 +1,11 @@
 package Plugins::TidalCompanion::Views;
 
-# A library view without lossy duplicates: the whole library, minus each lossy
-# local album that has a lossless TIDAL copy in the library. Choose it as a
-# player's library to see only the TIDAL copy; the TIDAL album's menu says a
-# lossy copy is hidden.
+# A library view without lossy duplicates: the whole library, minus
+#   - each lossy local album that has a lossless TIDAL copy in the library
+#   - each lossy local album that has a lossless local copy
+#   - lossy tracks in an album that also has the same songs in lossless
+# Choose it as a player's library to see only the lossless copy; that album's
+# menu says a lossy copy is hidden.
 #
 # Registered in the server and in the scanner, which rebuilds library views
 # at the end of each scan.
@@ -50,7 +52,12 @@ sub _build {
 	});
 	$sth->execute($libraryId, $_) foreach @hidden;
 
-	main::INFOLOG && $log->is_info && $log->info('Library without lossy duplicates hides ' . scalar(@hidden) . ' album(s)');
+	my @tracks = Plugins::TidalCompanion::Library->hiddenTrackIds;
+
+	$sth = $dbh->prepare_cached('DELETE FROM library_track WHERE library = ? AND track = ?');
+	$sth->execute($libraryId, $_) foreach @tracks;
+
+	main::INFOLOG && $log->is_info && $log->info('Library without lossy duplicates hides ' . scalar(@hidden) . ' album(s) and ' . scalar(@tracks) . ' other track(s)');
 }
 
 # On the server: build the view the first time, before any scan has.
