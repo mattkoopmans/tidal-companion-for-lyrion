@@ -45,6 +45,18 @@ TIDAL plugin and Lyrion's online music library integration.
 Albums added to TIDAL favorites appear in the library after Lyrion's online
 library update, which TIDAL Companion starts for you.
 
+5. **Versions of an album, and a default version.** "Versions" in an album's
+   menu lists every copy of that album in your library (local folders and
+   TIDAL albums), with format, track count, year and which copy is hidden.
+   Each copy can be shown or played as itself, and "More versions on TIDAL"
+   lists other releases you can add to favorites. Pick "Make this the default
+   version" on a copy and playing any copy of the album plays that one; the
+   other copies are hidden in the "Without lossy duplicates" view. A copy only
+   gives way to the default when at least 80% of its tracks are on it, so a
+   live recording that shares a title is left alone. "Use the automatic
+   choice again" goes back to lossless over lossy. The choice is remembered
+   by TIDAL album or folder, so it survives rescans.
+
 ### Same album, different version
 
 Versions of an album count as the same album. Version information in titles

@@ -23,6 +23,8 @@ sub clearCache {
 	undef $artists;
 	%twins = ();
 	%localCopies = ();
+
+	Plugins::TidalCompanion::Versions->clearCache if Plugins::TidalCompanion::Versions->can('clearCache');
 }
 
 sub _dbh { Slim::Schema->dbh }
@@ -134,6 +136,11 @@ sub tidalCovers {
 	return 0 unless $twin->{tracks};
 
 	return coversAlbum(scalar keys %{ $twin->{tracks} }, $twin->{lossyCount} || 0);
+}
+
+sub tracksOf {
+	my ($class, $albumId) = @_;
+	return _tracks($albumId);
 }
 
 sub _tracks {
@@ -269,6 +276,15 @@ sub lossyCopiesOf {
 	}
 
 	return \@copies;
+}
+
+# TIDAL album IDs (TIDAL's own) of the TIDAL albums in the library.
+sub tidalAlbumIdsInLibrary {
+	my $ids = _dbh()->selectcol_arrayref(q{
+		SELECT extid FROM albums WHERE extid LIKE 'tidal:album:%'
+	}) || [];
+
+	return map { /(\d+)$/ ? $1 : () } @$ids;
 }
 
 sub albumArtistName {

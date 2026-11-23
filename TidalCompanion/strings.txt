@@ -19,8 +19,6 @@ PLUGIN_TIDALCOMPANION_SCAN_DESC
 PLUGIN_TIDALCOMPANION_SCAN_PROGRESS
 	EN	New releases on TIDAL
 
-PLUGIN_TIDALCOMPANION_PLAYS_LOSSLESS
-	EN	Plays in lossless from TIDAL
 
 PLUGIN_TIDALCOMPANION_FIND_ON_TIDAL
 	EN	Find the lossless version on TIDAL
@@ -61,11 +59,61 @@ PLUGIN_TIDALCOMPANION_TRACKS
 PLUGIN_TIDALCOMPANION_LIBRARY
 	EN	Without lossy duplicates
 
-PLUGIN_TIDALCOMPANION_LOSSY_COPY
-	EN	Your lossy copy (%s) plays as this album and is hidden in the "Without lossy duplicates" library
 
-PLUGIN_TIDALCOMPANION_LOSSY_COPY_LOCAL
-	EN	Your lossy copy (%s) is hidden in the "Without lossy duplicates" library
 
 PLUGIN_TIDALCOMPANION_HAS_LOSSLESS_COPY
 	EN	Your library has a lossless copy of this album, so this one is hidden in the "Without lossy duplicates" library
+
+PLUGIN_TIDALCOMPANION_VERSIONS
+	EN	Versions (%s)
+
+PLUGIN_TIDALCOMPANION_OTHER_ON_TIDAL
+	EN	Other versions on TIDAL
+
+PLUGIN_TIDALCOMPANION_MORE_ON_TIDAL
+	EN	More versions on TIDAL
+
+PLUGIN_TIDALCOMPANION_NO_OTHER_ON_TIDAL
+	EN	No other versions on TIDAL.
+
+PLUGIN_TIDALCOMPANION_PLAYS_AS
+	EN	Plays as the %s version
+
+PLUGIN_TIDALCOMPANION_IS_DEFAULT
+	EN	This is the default version
+
+PLUGIN_TIDALCOMPANION_FLAG_DEFAULT
+	EN	default
+
+PLUGIN_TIDALCOMPANION_FLAG_THIS
+	EN	this album
+
+PLUGIN_TIDALCOMPANION_FLAG_HIDDEN
+	EN	hidden
+
+PLUGIN_TIDALCOMPANION_SHOW_TRACKS
+	EN	Show tracks
+
+PLUGIN_TIDALCOMPANION_PLAY_VERSION
+	EN	Play this version
+
+PLUGIN_TIDALCOMPANION_PLAYING_VERSION
+	EN	Playing this version.
+
+PLUGIN_TIDALCOMPANION_NO_PLAYER
+	EN	Choose a player first.
+
+PLUGIN_TIDALCOMPANION_MAKE_DEFAULT
+	EN	Make this the default version
+
+PLUGIN_TIDALCOMPANION_CANT_DEFAULT
+	EN	This version can't be made the default.
+
+PLUGIN_TIDALCOMPANION_DEFAULT_SET
+	EN	%s is now the default version. Playing any version of this album plays this one, and the others are hidden in the "Without lossy duplicates" library.
+
+PLUGIN_TIDALCOMPANION_AUTOMATIC
+	EN	Use the automatic choice again
+
+PLUGIN_TIDALCOMPANION_AUTOMATIC_SET
+	EN	Back to the automatic choice: lossless versions play instead of lossy ones.

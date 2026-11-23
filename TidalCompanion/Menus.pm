@@ -1,8 +1,9 @@
 package Plugins::TidalCompanion::Menus;
 
 # The album and artist context menu items:
-#   - on a lossy local album: a note that it plays from TIDAL, or a search for
-#     it on TIDAL with an item to add the result to TIDAL favorites
+#   - on an album: a note if it plays as another version or is hidden, and
+#     its versions in the library, with an item to make one the default;
+#     without other versions, a search for it on TIDAL
 #   - on an artist: the albums TIDAL has that the library doesn't, with an
 #     item to add them all to TIDAL favorites
 
@@ -15,6 +16,8 @@ use Slim::Utils::Strings qw(cstring);
 use Slim::Utils::Timers;
 
 use Plugins::TidalCompanion::Library;
+use Plugins::TidalCompanion::Versions;
+use Plugins::TidalCompanion::Views;
 use Plugins::TidalCompanion::Rules qw(albumKey artistKey favoriteKeys missingAlbums groupAlbums);
 
 my $log = logger('plugin.tidalcompanion');
@@ -64,49 +67,208 @@ sub _text {
 sub albumMenu {
 	my ($client, $url, $album) = @_;
 
-	return unless $album && $album->can('id') && _tidalReady();
+	return unless $album && $album->can('id');
 
-	my $status = eval { Plugins::TidalCompanion::Library->albumStatus($album->id) };
-	$log->error("Couldn't check album " . $album->id . ": $@") if $@;
+	my $id = $album->id;
+	my ($versions, $key) = eval { Plugins::TidalCompanion::Versions->versionsOf($id) };
+	$log->error("Couldn't look up versions of album $id: $@") if $@;
+	$versions ||= [];
 
-	if (!$status) {
-		# a TIDAL album standing in for a lossy local copy
-		my $copies = eval { Plugins::TidalCompanion::Library->lossyCopiesOf($album->id) } || [];
-		return unless @$copies;
+	my ($self) = grep { $_->{id} == $id } @$versions;
+	my @items;
 
-		my $copy = $copies->[0];
+	if (my $note = eval { _statusNote($client, $id, $versions, $key) }) {
+		push @items, $note;
+	}
 
-		return {
-			type => 'text',
-			name => cstring($client,
-				$copy->{via} eq 'tidal' ? 'PLUGIN_TIDALCOMPANION_LOSSY_COPY' : 'PLUGIN_TIDALCOMPANION_LOSSY_COPY_LOCAL',
-				$copy->{formats} || '?'),
+	if (@$versions > 1) {
+		push @items, {
+			type => 'link',
+			name => cstring($client, 'PLUGIN_TIDALCOMPANION_VERSIONS', scalar @$versions),
+			url  => \&versionsMenu,
+			passthrough => [{ albumId => $id }],
+		};
+	}
+	elsif (_tidalReady()) {
+		my $lossy = $self && $self->{source} eq 'local' && $self->{lossy};
+
+		push @items, {
+			type => 'link',
+			name => cstring($client, $lossy ? 'PLUGIN_TIDALCOMPANION_FIND_ON_TIDAL' : 'PLUGIN_TIDALCOMPANION_OTHER_ON_TIDAL'),
+			url  => $lossy ? \&findAlbum : \&moreOnTidal,
+			passthrough => [{
+				artist => Plugins::TidalCompanion::Library->albumArtistName($id) || '',
+				title  => $album->title,
+			}],
 		};
 	}
 
-	if ($status eq 'localLossless') {
+	return \@items;
+}
+
+sub _describe {
+	my ($client, $version) = @_;
+	return $version->{source} eq 'tidal' ? "TIDAL $version->{formats}" : $version->{formats};
+}
+
+# A line saying whether this album plays as another version or is hidden.
+sub _statusNote {
+	my ($client, $id, $versions, $key) = @_;
+
+	if (my $redirect = Plugins::TidalCompanion::Versions->redirect($id)) {
+		my ($target) = grep { $_->{id} == $redirect->{album} } @$versions;
 		return {
 			type => 'text',
-			name => cstring($client, 'PLUGIN_TIDALCOMPANION_HAS_LOSSLESS_COPY'),
+			name => cstring($client, 'PLUGIN_TIDALCOMPANION_PLAYS_AS', $target ? _describe($client, $target) : '?'),
 		};
 	}
 
-	if ($status eq 'twin') {
-		return {
-			type => 'text',
-			name => cstring($client, 'PLUGIN_TIDALCOMPANION_PLAYS_LOSSLESS'),
+	my $default = $key ? Plugins::TidalCompanion::Versions->chosenDefault($key) : undef;
+	return { type => 'text', name => cstring($client, 'PLUGIN_TIDALCOMPANION_IS_DEFAULT') }
+		if $default && $default == $id;
+
+	return { type => 'text', name => cstring($client, 'PLUGIN_TIDALCOMPANION_HAS_LOSSLESS_COPY') }
+		if Plugins::TidalCompanion::Versions->isHidden($id);
+
+	return;
+}
+
+sub versionsMenu {
+	my ($client, $cb, $args, $params) = @_;
+
+	my $albumId = $params->{albumId};
+	my ($versions, $key) = Plugins::TidalCompanion::Versions->versionsOf($albumId);
+	my $default = $key ? Plugins::TidalCompanion::Versions->chosenDefault($key) : undef;
+
+	my @items;
+	foreach my $version (@$versions) {
+		my $id = $version->{id};
+
+		my @flags;
+		push @flags, cstring($client, 'PLUGIN_TIDALCOMPANION_FLAG_DEFAULT') if $default && $default == $id;
+		push @flags, cstring($client, 'PLUGIN_TIDALCOMPANION_FLAG_THIS') if $id == $albumId;
+		push @flags, cstring($client, 'PLUGIN_TIDALCOMPANION_FLAG_HIDDEN') if Plugins::TidalCompanion::Versions->isHidden($id);
+
+		my $details = join(' · ', grep { $_ }
+			_describe($client, $version),
+			cstring($client, 'PLUGIN_TIDALCOMPANION_TRACKS', $version->{tracks}),
+			$version->{year},
+			@flags,
+		);
+
+		push @items, {
+			type  => 'link',
+			name  => "$version->{title} ($details)",
+			line1 => $version->{title},
+			line2 => $details,
+			items => [
+				{
+					type => 'playlist',
+					name => cstring($client, 'PLUGIN_TIDALCOMPANION_SHOW_TRACKS'),
+					url  => \&Slim::Menu::BrowseLibrary::_tracks,
+					passthrough => [{ searchTags => [ "album_id:$id", 'library_id:-1' ] }],
+				},
+				{
+					type => 'link',
+					name => cstring($client, 'PLUGIN_TIDALCOMPANION_PLAY_VERSION'),
+					url  => \&playVersion,
+					passthrough => [{ albumId => $id }],
+				},
+				$default && $default == $id
+					? { type => 'text', name => cstring($client, 'PLUGIN_TIDALCOMPANION_IS_DEFAULT') }
+					: {
+						type => 'link',
+						name => cstring($client, 'PLUGIN_TIDALCOMPANION_MAKE_DEFAULT'),
+						url  => \&makeDefault,
+						passthrough => [{ albumId => $id, label => "$version->{title} (" . _describe($client, $version) . ')' }],
+					},
+			],
 		};
 	}
 
-	return {
+	push @items, {
 		type => 'link',
-		name => cstring($client, 'PLUGIN_TIDALCOMPANION_FIND_ON_TIDAL'),
-		url  => \&findAlbum,
+		name => cstring($client, 'PLUGIN_TIDALCOMPANION_AUTOMATIC'),
+		url  => \&automaticChoice,
+		passthrough => [{ key => $key }],
+	} if $default;
+
+	push @items, {
+		type => 'link',
+		name => cstring($client, 'PLUGIN_TIDALCOMPANION_MORE_ON_TIDAL'),
+		url  => \&moreOnTidal,
 		passthrough => [{
-			artist => Plugins::TidalCompanion::Library->albumArtistName($album->id) || '',
-			title  => $album->title,
+			artist => Plugins::TidalCompanion::Library->albumArtistName($albumId) || '',
+			title  => $versions->[0] ? $versions->[0]->{title} : '',
 		}],
-	};
+	} if _tidalReady();
+
+	$cb->({ items => \@items });
+}
+
+sub playVersion {
+	my ($client, $cb, $args, $params) = @_;
+
+	return _text($cb, cstring($client, 'PLUGIN_TIDALCOMPANION_NO_PLAYER')) unless ref $client;
+
+	{
+		# this version on purpose, not the default
+		local $Plugins::TidalCompanion::Swap::bypass = 1;
+		$client->execute(['playlistcontrol', 'cmd:load', "album_id:$params->{albumId}", 'library_id:-1']);
+	}
+
+	_text($cb, cstring($client, 'PLUGIN_TIDALCOMPANION_PLAYING_VERSION'));
+}
+
+sub makeDefault {
+	my ($client, $cb, $args, $params) = @_;
+
+	Plugins::TidalCompanion::Versions->setDefault($params->{albumId})
+		or return _text($cb, cstring($client, 'PLUGIN_TIDALCOMPANION_CANT_DEFAULT'));
+
+	$log->warn("Default version chosen: $params->{label}");
+	Plugins::TidalCompanion::Views->rebuild;
+
+	_text($cb, cstring($client, 'PLUGIN_TIDALCOMPANION_DEFAULT_SET', $params->{label}));
+}
+
+sub automaticChoice {
+	my ($client, $cb, $args, $params) = @_;
+
+	Plugins::TidalCompanion::Versions->clearDefault($params->{key}) if $params->{key};
+	Plugins::TidalCompanion::Views->rebuild;
+
+	_text($cb, cstring($client, 'PLUGIN_TIDALCOMPANION_AUTOMATIC_SET'));
+}
+
+# Versions of the album on TIDAL that aren't in the library yet.
+sub moreOnTidal {
+	my ($client, $cb, $args, $params) = @_;
+
+	my $wantAlbum  = albumKey($params->{title});
+	my $wantArtist = artistKey($params->{artist});
+
+	my %inLibrary = map { $_ => 1 } Plugins::TidalCompanion::Library->tidalAlbumIdsInLibrary;
+
+	_api($client)->search(sub {
+		my $albums = shift;
+		$albums = [] unless ref $albums eq 'ARRAY';
+
+		my @matches = grep {
+			my $album = $_;
+			!$inLibrary{ $album->{id} }
+			&& albumKey($album->{title}, $album->{version}) eq $wantAlbum
+			&& grep { artistKey($_->{name}) eq $wantArtist } ($album->{artist} || {}), @{ $album->{artists} || [] }
+		} @$albums;
+
+		return _text($cb, cstring($client, 'PLUGIN_TIDALCOMPANION_NO_OTHER_ON_TIDAL')) unless @matches;
+
+		$cb->({ items => [ map { _albumItem($client, $_) } @matches ] });
+	}, {
+		type   => 'albums',
+		search => join(' ', grep { $_ } $params->{artist}, $params->{title}),
+		limit  => 50,
+	});
 }
 
 sub findAlbum {

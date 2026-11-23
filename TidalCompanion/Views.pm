@@ -4,8 +4,8 @@ package Plugins::TidalCompanion::Views;
 #   - each lossy local album that has a lossless TIDAL copy in the library
 #   - each lossy local album that has a lossless local copy
 #   - lossy tracks in an album that also has the same songs in lossless
-# Choose it as a player's library to see only the lossless copy; that album's
-# menu says a lossy copy is hidden.
+#   - every other version of an album with a chosen default version
+# Choose it as a player's library to see one copy of each album.
 #
 # Registered in the server and in the scanner, which rebuilds library views
 # at the end of each scan.
@@ -18,6 +18,7 @@ use Slim::Utils::Prefs;
 use Slim::Utils::Strings qw(string);
 
 use Plugins::TidalCompanion::Library;
+use Plugins::TidalCompanion::Versions;
 
 use constant ID => 'tidalCompanionNoLossyDuplicates';
 
@@ -43,13 +44,11 @@ sub _build {
 	}, undef, $libraryId);
 
 	Plugins::TidalCompanion::Library->clearCache;
-	my @hidden = Plugins::TidalCompanion::Library->hiddenAlbumIds;
+	my @hidden = Plugins::TidalCompanion::Versions->hiddenAlbumIds;
 
 	my $sth = $dbh->prepare_cached(q{
 		DELETE FROM library_track
-		WHERE library = ? AND track IN (
-			SELECT id FROM tracks WHERE album = ? AND url LIKE 'file:%'
-		)
+		WHERE library = ? AND track IN (SELECT id FROM tracks WHERE album = ?)
 	});
 	$sth->execute($libraryId, $_) foreach @hidden;
 
@@ -59,6 +58,10 @@ sub _build {
 	$sth->execute($libraryId, $_) foreach @tracks;
 
 	main::INFOLOG && $log->is_info && $log->info('Library without lossy duplicates hides ' . scalar(@hidden) . ' album(s) and ' . scalar(@tracks) . ' other track(s)');
+}
+
+sub rebuild {
+	Slim::Music::VirtualLibraries->rebuild(ID);
 }
 
 # On the server: build the view if it's empty, or if this version of the
