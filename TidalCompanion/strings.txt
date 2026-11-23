@@ -1,0 +1,59 @@
+PLUGIN_TIDALCOMPANION
+	EN	Tidal Companion
+
+PLUGIN_TIDALCOMPANION_DESC
+	EN	Works with the TIDAL plugin and online music library integration. Lossy albums in your library play from their lossless Tidal copy, lossy albums can be found on Tidal, and artists' missing and new albums can be added from Tidal.
+
+PLUGIN_TIDALCOMPANION_SWAP
+	EN	Play lossless from Tidal
+
+PLUGIN_TIDALCOMPANION_SWAP_DESC
+	EN	When a lossy album (MP3, AAC and so on) is also in the library from your Tidal favorites, play the lossless Tidal tracks instead. This applies wherever its tracks are played: the album, a single track, an artist, a playlist or a mix.
+
+PLUGIN_TIDALCOMPANION_SCAN
+	EN	Add new releases during library scans
+
+PLUGIN_TIDALCOMPANION_SCAN_DESC
+	EN	During each library scan, add albums that have come out on Tidal since the last check, for every album artist in your library, to your Tidal favorites so they appear in the library. The first scan only notes what each artist already has. To add an artist's older albums, use "Add missing albums from Tidal" on the artist.
+
+PLUGIN_TIDALCOMPANION_SCAN_PROGRESS
+	EN	New releases on Tidal
+
+PLUGIN_TIDALCOMPANION_PLAYS_LOSSLESS
+	EN	Plays in lossless from Tidal
+
+PLUGIN_TIDALCOMPANION_FIND_ON_TIDAL
+	EN	Find the lossless version on Tidal
+
+PLUGIN_TIDALCOMPANION_ADD_TO_FAVORITES
+	EN	Add to Tidal favorites
+
+PLUGIN_TIDALCOMPANION_ADD_MISSING
+	EN	Add missing albums from Tidal
+
+PLUGIN_TIDALCOMPANION_ADD_ALL
+	EN	Add all %s albums to Tidal favorites
+
+PLUGIN_TIDALCOMPANION_ADDED
+	EN	Added "%s" to your Tidal favorites.
+
+PLUGIN_TIDALCOMPANION_ADDED_N
+	EN	Added %s albums to your Tidal favorites.
+
+PLUGIN_TIDALCOMPANION_LIBRARY_UPDATING
+	EN	The library is being updated and will show them in a few minutes.
+
+PLUGIN_TIDALCOMPANION_NO_ONLINE_LIBRARY
+	EN	To see them in the library, turn on online music library integration for TIDAL in Lyrion's settings.
+
+PLUGIN_TIDALCOMPANION_NOTHING_FOUND
+	EN	Nothing found on Tidal.
+
+PLUGIN_TIDALCOMPANION_NO_ARTIST
+	EN	Couldn't find %s on Tidal.
+
+PLUGIN_TIDALCOMPANION_NONE_MISSING
+	EN	The library already has every album Tidal lists for %s.
+
+PLUGIN_TIDALCOMPANION_TRACKS
+	EN	%s tracks

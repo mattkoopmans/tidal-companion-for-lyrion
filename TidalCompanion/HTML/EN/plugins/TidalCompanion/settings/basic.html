@@ -1,0 +1,15 @@
+[% PROCESS settings/header.html %]
+
+	<div class="prefDesc">[% "PLUGIN_TIDALCOMPANION_DESC" | string %]</div>
+
+	[% WRAPPER setting title="PLUGIN_TIDALCOMPANION_SWAP" desc="PLUGIN_TIDALCOMPANION_SWAP_DESC" %]
+		<input type="checkbox" name="pref_swapLossy" id="pref_swapLossy" value="1" [% IF prefs.swapLossy %]checked[% END %] />
+		<label for="pref_swapLossy">[% "PLUGIN_TIDALCOMPANION_SWAP" | string %]</label>
+	[% END %]
+
+	[% WRAPPER setting title="PLUGIN_TIDALCOMPANION_SCAN" desc="PLUGIN_TIDALCOMPANION_SCAN_DESC" %]
+		<input type="checkbox" name="pref_scanNewReleases" id="pref_scanNewReleases" value="1" [% IF prefs.scanNewReleases %]checked[% END %] />
+		<label for="pref_scanNewReleases">[% "PLUGIN_TIDALCOMPANION_SCAN" | string %]</label>
+	[% END %]
+
+[% PROCESS settings/footer.html %]

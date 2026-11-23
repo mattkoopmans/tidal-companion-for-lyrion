@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<extensions>
+	<name>PLUGIN_TIDALCOMPANION</name>
+	<description>PLUGIN_TIDALCOMPANION_DESC</description>
+	<creator>Matt Koopmans</creator>
+	<id>081bdfb1-97a5-4797-a581-285c6ed48f83</id>
+	<version>0.1.0</version>
+	<module>Plugins::TidalCompanion::Plugin</module>
+	<importmodule>Plugins::TidalCompanion::Importer</importmodule>
+	<defaultState>enabled</defaultState>
+	<optionsURL>plugins/TidalCompanion/settings/basic.html</optionsURL>
+	<category>musicservices</category>
+	<targetApplication>
+		<minVersion>9.0.0</minVersion>
+		<maxVersion>*</maxVersion>
+	</targetApplication>
+</extensions>
