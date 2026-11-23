@@ -15,7 +15,7 @@ our @EXPORT_OK = qw(
 	normKey baseTitle albumKey artistKey trackKey
 	isLossy isLosslessOnTidal
 	groupAlbums pickVersion missingAlbums newAlbums favoriteKeys
-	matchTracks similarTitles coversAlbum
+	matchTracks similarTitles coversAlbum pickDefaultVersion
 );
 
 # Words that mark a release as another version of the same album rather than
@@ -82,6 +82,10 @@ sub baseTitle {
 
 sub _isVersionText {
 	my ($text) = @_;
+
+	# a bonus disc or a second CD is more music, not another version
+	return 0 if $text =~ /\b(?:disc|disk|cd)\b/i;
+
 	return $text =~ $VERSION_WORDS || $text =~ /^\s*\d{4}\s*$/ ? 1 : 0;
 }
 
@@ -259,6 +263,23 @@ sub matchTracks {
 	}
 
 	return \%map;
+}
+
+# The version of an album to play and show when none was chosen by hand:
+# lossless before lossy, then the one with the most tracks, then your own
+# files before TIDAL, then the lowest library ID so the choice is stable.
+# Each version is { id, lossy, tracks, source }.
+sub pickDefaultVersion {
+	my @versions = @_;
+
+	my ($best) = sort {
+		($a->{lossy} ? 1 : 0) <=> ($b->{lossy} ? 1 : 0)
+		|| ($b->{tracks} || 0) <=> ($a->{tracks} || 0)
+		|| (($a->{source} || '') eq 'tidal' ? 1 : 0) <=> (($b->{source} || '') eq 'tidal' ? 1 : 0)
+		|| ($a->{id} || 0) <=> ($b->{id} || 0)
+	} @versions;
+
+	return $best;
 }
 
 # True if enough of an album's tracks found partners for the albums to count

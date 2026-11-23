@@ -89,6 +89,22 @@ sub albumMenu {
 			passthrough => [{ albumId => $id }],
 		};
 	}
+
+	if ($self) {
+		push @items, {
+			type => 'link',
+			name => cstring($client, 'PLUGIN_TIDALCOMPANION_MERGE'),
+			url  => \&mergeMenu,
+			passthrough => [{ albumId => $id }],
+		};
+
+		push @items, {
+			type => 'link',
+			name => cstring($client, 'PLUGIN_TIDALCOMPANION_REJOIN'),
+			url  => \&groupChange,
+			passthrough => [{ action => 'rejoin', albumId => $id }],
+		} if Plugins::TidalCompanion::Versions->isSeparated($id);
+	}
 	elsif (_tidalReady()) {
 		my $lossy = $self && $self->{source} eq 'local' && $self->{lossy};
 
@@ -127,9 +143,6 @@ sub _statusNote {
 	return { type => 'text', name => cstring($client, 'PLUGIN_TIDALCOMPANION_IS_DEFAULT') }
 		if $default && $default == $id;
 
-	return { type => 'text', name => cstring($client, 'PLUGIN_TIDALCOMPANION_HAS_LOSSLESS_COPY') }
-		if Plugins::TidalCompanion::Versions->isHidden($id);
-
 	return;
 }
 
@@ -139,15 +152,17 @@ sub versionsMenu {
 	my $albumId = $params->{albumId};
 	my ($versions, $key) = Plugins::TidalCompanion::Versions->versionsOf($albumId);
 	my $default = $key ? Plugins::TidalCompanion::Versions->chosenDefault($key) : undef;
+	my $automatic = $key ? Plugins::TidalCompanion::Versions->defaultOf($key) : undef;
 
 	my @items;
 	foreach my $version (@$versions) {
 		my $id = $version->{id};
 
 		my @flags;
-		push @flags, cstring($client, 'PLUGIN_TIDALCOMPANION_FLAG_DEFAULT') if $default && $default == $id;
+		push @flags, cstring($client, $default ? 'PLUGIN_TIDALCOMPANION_FLAG_DEFAULT' : 'PLUGIN_TIDALCOMPANION_FLAG_AUTO_DEFAULT') if $automatic && $automatic == $id;
 		push @flags, cstring($client, 'PLUGIN_TIDALCOMPANION_FLAG_THIS') if $id == $albumId;
 		push @flags, cstring($client, 'PLUGIN_TIDALCOMPANION_FLAG_HIDDEN') if Plugins::TidalCompanion::Versions->isHidden($id);
+		push @flags, cstring($client, 'PLUGIN_TIDALCOMPANION_FLAG_MERGED') if Plugins::TidalCompanion::Versions->isMerged($id);
 
 		my $details = join(' · ', grep { $_ }
 			_describe($client, $version),
@@ -174,6 +189,19 @@ sub versionsMenu {
 					url  => \&playVersion,
 					passthrough => [{ albumId => $id }],
 				},
+				Plugins::TidalCompanion::Versions->isMerged($id)
+					? {
+						type => 'link',
+						name => cstring($client, 'PLUGIN_TIDALCOMPANION_UNDO_MERGE'),
+						url  => \&groupChange,
+						passthrough => [{ action => 'separate', albumId => $id }],
+					}
+					: {
+						type => 'link',
+						name => cstring($client, 'PLUGIN_TIDALCOMPANION_SEPARATE'),
+						url  => \&groupChange,
+						passthrough => [{ action => 'separate', albumId => $id }],
+					},
 				$default && $default == $id
 					? { type => 'text', name => cstring($client, 'PLUGIN_TIDALCOMPANION_IS_DEFAULT') }
 					: {
@@ -239,6 +267,68 @@ sub automaticChoice {
 	Plugins::TidalCompanion::Views->rebuild;
 
 	_text($cb, cstring($client, 'PLUGIN_TIDALCOMPANION_AUTOMATIC_SET'));
+}
+
+# Albums this album can be merged with, each opening onto a confirmation.
+sub mergeMenu {
+	my ($client, $cb, $args, $params) = @_;
+
+	my $albumId = $params->{albumId};
+	my $candidates = Plugins::TidalCompanion::Versions->mergeCandidates($albumId);
+
+	return _text($cb, cstring($client, 'PLUGIN_TIDALCOMPANION_NOTHING_TO_MERGE')) unless @$candidates;
+
+	$cb->({ items => [ map {
+		my $candidate = $_;
+		my $details = join(' · ', grep { $_ }
+			$candidate->{artist},
+			$candidate->{count} > 1 ? cstring($client, 'PLUGIN_TIDALCOMPANION_N_VERSIONS', $candidate->{count}) : '',
+		);
+
+		{
+			type  => 'link',
+			name  => "$candidate->{title} ($details)",
+			line1 => $candidate->{title},
+			line2 => $details,
+			items => [{
+				type => 'link',
+				name => cstring($client, 'PLUGIN_TIDALCOMPANION_MERGE_CONFIRM', $candidate->{title}),
+				url  => \&groupChange,
+				passthrough => [{ action => 'merge', albumId => $albumId, targetId => $candidate->{id} }],
+			}],
+		}
+	} @$candidates ] });
+}
+
+# Merges, separates or puts back an album, then rebuilds the library view.
+sub groupChange {
+	my ($client, $cb, $args, $params) = @_;
+
+	my $versions = 'Plugins::TidalCompanion::Versions';
+	my $version = $versions->version($params->{albumId});
+	my $title = $version ? $version->{title} : '?';
+
+	my ($ok, $message);
+	if ($params->{action} eq 'merge') {
+		$ok = $versions->merge($params->{albumId}, $params->{targetId});
+		$message = 'PLUGIN_TIDALCOMPANION_MERGED';
+	}
+	elsif ($params->{action} eq 'separate') {
+		my $wasMerged = $versions->isMerged($params->{albumId});
+		$ok = $versions->separate($params->{albumId});
+		$message = $wasMerged ? 'PLUGIN_TIDALCOMPANION_MERGE_UNDONE' : 'PLUGIN_TIDALCOMPANION_SEPARATED';
+	}
+	elsif ($params->{action} eq 'rejoin') {
+		$ok = $versions->rejoin($params->{albumId});
+		$message = 'PLUGIN_TIDALCOMPANION_REJOINED';
+	}
+
+	return _text($cb, cstring($client, 'PLUGIN_TIDALCOMPANION_CANT_CHANGE')) unless $ok;
+
+	$log->warn("Versions changed ($params->{action}): $title");
+	Plugins::TidalCompanion::Views->rebuild;
+
+	_text($cb, cstring($client, $message, $title));
 }
 
 # Versions of the album on TIDAL that aren't in the library yet.

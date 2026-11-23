@@ -10,7 +10,7 @@ BEGIN {
 	Plugins::TidalCompanion::Rules->import(qw(
 		normKey baseTitle albumKey artistKey trackKey
 		isLossy isLosslessOnTidal
-		groupAlbums pickVersion missingAlbums newAlbums favoriteKeys matchTracks similarTitles coversAlbum
+		groupAlbums pickVersion missingAlbums newAlbums favoriteKeys matchTracks similarTitles coversAlbum pickDefaultVersion
 	));
 }
 
@@ -51,6 +51,9 @@ foreach (@same) {
 is(albumKey('Vision Thing', 'Remastered'), albumKey('Vision Thing'), 'TIDAL version field ignored');
 
 my @different = (
+	['Crack the Skye (bonus disc)', 'Crack the Skye'],
+	['1.Outside (Bonus Disc)', '1.Outside'],
+	['Live (CD 2)', 'Live'],
 	['Alive (Live)', 'Alive'],
 	['Hits (Volume 2)', 'Hits'],
 	['Mind Funk', 'Dropped'],
@@ -183,5 +186,14 @@ ok(coversAlbum(13, 14), 'one stray track still covers it');
 ok(!coversAlbum(0, 1), 'a live show sharing a studio album title does not');
 ok(!coversAlbum(5, 10), 'half the tracks do not');
 ok(!coversAlbum(0, 0), 'no tracks never covers');
+
+my $mp3      = { id => 1, lossy => 1, tracks => 14, source => 'local' };
+my $tidal11  = { id => 2, lossy => 0, tracks => 11, source => 'tidal' };
+my $flac11   = { id => 3, lossy => 0, tracks => 11, source => 'local' };
+my $boxset   = { id => 4, lossy => 0, tracks => 40, source => 'local' };
+is(pickDefaultVersion($mp3, $tidal11)->{id}, 2, 'lossless beats lossy, even with fewer tracks');
+is(pickDefaultVersion($tidal11, $flac11)->{id}, 3, 'own files beat TIDAL when equal');
+is(pickDefaultVersion($tidal11, $flac11, $boxset, $mp3)->{id}, 4, 'most tracks among lossless wins');
+is(pickDefaultVersion({ id => 9, lossy => 1, tracks => 5 }, { id => 8, lossy => 1, tracks => 5 })->{id}, 8, 'then the lowest ID');
 
 done_testing();

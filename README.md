@@ -45,23 +45,30 @@ TIDAL plugin and Lyrion's online music library integration.
 Albums added to TIDAL favorites appear in the library after Lyrion's online
 library update, which TIDAL Companion starts for you.
 
-5. **Versions of an album, and a default version.** "Versions" in an album's
-   menu lists every copy of that album in your library (local folders and
-   TIDAL albums), with format, track count, year and which copy is hidden.
-   Each copy can be shown or played as itself, and "More versions on TIDAL"
-   lists other releases you can add to favorites. Pick "Make this the default
-   version" on a copy and playing any copy of the album plays that one; the
-   other copies are hidden in the "Without lossy duplicates" view. A copy only
-   gives way to the default when at least 80% of its tracks are on it, so a
-   live recording that shares a title is left alone. "Use the automatic
-   choice again" goes back to lossless over lossy. The choice is remembered
-   by TIDAL album or folder, so it survives rescans.
+5. **Versions of an album, and a default version.** Copies of the same
+   album in your library (local folders and TIDAL albums) are versions of
+   each other. One version plays for all and is the one shown in the
+   "Without lossy duplicates" view: the one you chose, or else the best one
+   (lossless before lossy, then the most tracks, then your own files before
+   TIDAL). Playing another version plays that one instead. A version only
+   gives way when at least 80% of its tracks are on the chosen one, so a live
+   recording that shares a title is left alone.
+
+   "Versions" in an album's menu lists the versions with format, track count,
+   year and status. Each can be shown or played as itself, made the default,
+   or taken out of the group ("Not a version of this album"; undo with "Put
+   back with its versions" in its menu). "Merge with another album as
+   versions" joins albums that weren't matched automatically, such as ones
+   with different titles; "Undo merge" separates them again. "More versions
+   on TIDAL" lists other releases you can add to favorites. Choices are
+   remembered by TIDAL album or folder, so they survive rescans.
 
 ### Same album, different version
 
 Versions of an album count as the same album. Version information in titles
 is ignored, such as "(2011 Remaster)", "[Deluxe Edition]", "- Remastered 2009",
-"(Expanded)" or "(1999)". Live albums are different albums. When TIDAL has
+"(Expanded)" or "(1999)". Live albums, and bonus discs or second CDs, are
+different albums. When TIDAL has
 several versions of a missing album, the version with the most tracks is
 added. Only albums TIDAL offers in lossless quality are considered, and only
 albums (not EPs, singles or compilations).

@@ -116,4 +116,46 @@ PLUGIN_TIDALCOMPANION_AUTOMATIC
 	EN	Use the automatic choice again
 
 PLUGIN_TIDALCOMPANION_AUTOMATIC_SET
-	EN	Back to the automatic choice: lossless versions play instead of lossy ones.
+	EN	Back to the automatic choice: the lossless version with the most tracks plays, your own files before TIDAL.
+
+PLUGIN_TIDALCOMPANION_FLAG_AUTO_DEFAULT
+	EN	plays for all
+
+PLUGIN_TIDALCOMPANION_FLAG_MERGED
+	EN	merged by you
+
+PLUGIN_TIDALCOMPANION_MERGE
+	EN	Merge with another album as versions
+
+PLUGIN_TIDALCOMPANION_NOTHING_TO_MERGE
+	EN	There are no other albums by this artist, or with a similar title, to merge with.
+
+PLUGIN_TIDALCOMPANION_N_VERSIONS
+	EN	%s versions
+
+PLUGIN_TIDALCOMPANION_MERGE_CONFIRM
+	EN	Make this album a version of "%s"
+
+PLUGIN_TIDALCOMPANION_MERGED
+	EN	"%s" is now a version of that album. Undo it under Versions.
+
+PLUGIN_TIDALCOMPANION_UNDO_MERGE
+	EN	Undo merge
+
+PLUGIN_TIDALCOMPANION_MERGE_UNDONE
+	EN	Merge undone: "%s" is an album of its own again.
+
+PLUGIN_TIDALCOMPANION_SEPARATE
+	EN	Not a version of this album
+
+PLUGIN_TIDALCOMPANION_SEPARATED
+	EN	"%s" is now an album of its own. Undo it with "Put back with its versions" in its menu.
+
+PLUGIN_TIDALCOMPANION_REJOIN
+	EN	Put back with its versions
+
+PLUGIN_TIDALCOMPANION_REJOINED
+	EN	"%s" is back with its versions.
+
+PLUGIN_TIDALCOMPANION_CANT_CHANGE
+	EN	That couldn't be changed.
